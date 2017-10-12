@@ -541,7 +541,13 @@ $('.buy_coin_btn').click(function(){
 	    // If successful
 	   console.log(data);
 	   if (data.error == 'cant find utxo that is big enough') {
-			toastr.error('cant find utxo that is big enough', 'Autotrade Info')
+			toastr.error('cant find utxo that is big enough', 'Buy Info')
+	   }
+	   if (data.error == 'invalid parameter') {
+			toastr.error('invalid parameter', 'Buy Info')
+	   }
+	   if (data.error == 'cant find ordermatch utxo') {
+			toastr.error('cant find ordermatch utxo', 'Buy Info')
 	   }
 	   $('.initcoinswap-output').html(JSON.stringify(data, null, 2));
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -566,7 +572,7 @@ $('.sell_coin_btn').click(function(){
 	console.log('rel ' + rel_coin);
 
 	var userpass = sessionStorage.getItem('mm_userpass');
-	var ajax_data = {"userpass":userpass,"method":"sell","base":base_coin,"rel":rel_coin,"relvolume":amount,"price":price};
+	var ajax_data = {"userpass":userpass,"method":"sell","base":base_coin,"rel":rel_coin,"basevolume":amount,"price":price};
 	var url = "http://127.0.0.1:7783";
 
 	$.ajax({
@@ -578,7 +584,13 @@ $('.sell_coin_btn').click(function(){
 	    // If successful
 	   console.log(data);
 	   if (data.error == 'cant find utxo that is big enough') {
-			toastr.error('cant find utxo that is big enough', 'Autotrade Info')
+			toastr.error('cant find utxo that is big enough', 'Sell Info')
+	   }
+	   if (data.error == 'invalid parameter') {
+			toastr.error('invalid parameter', 'Sell Info')
+	   }
+	   if (data.error == 'cant find ordermatch utxo') {
+			toastr.error('cant find ordermatch utxo', 'Sell Info')
 	   }
 	   $('.initcoinswap-output').html(JSON.stringify(data, null, 2));
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -589,7 +601,7 @@ $('.sell_coin_btn').click(function(){
 });
 
 
-$('.lp_set_price_btn').click(function(){
+/*$('.lp_set_price_btn').click(function(){
 	var price = $('#lp_set_price').val();
 
 	//var base_coin = sessionStorage.getItem('dex_base_coin');
@@ -620,7 +632,7 @@ $('.lp_set_price_btn').click(function(){
 	});
 
 	get_myprices();
-})
+})*/
 
 
 /*$('.inv_alice_table tbody').on('click', '.inv_autotrade', function() {
@@ -714,7 +726,7 @@ function CheckOrderBookFn(sig) {
 			$('.orderbook_bids tbody').empty();
 			$.each(data.bids, function(index, val) {
 				//console.log(index);
-				console.log(val);
+				//console.log(val);
 				var mytrade_true = '';
 				if (val.pubkey === mypubkey) {
 					var mytrade_true = 'class="warning"';
@@ -732,7 +744,7 @@ function CheckOrderBookFn(sig) {
 			$('.orderbook_asks tbody').empty();
 			$.each(data.asks, function(index, val) {
 				//console.log(index);
-				console.log(val);
+				//console.log(val);
 				var mytrade_true = '';
 				if (val.pubkey === mypubkey) {
 					var mytrade_true = 'class="warning"';
