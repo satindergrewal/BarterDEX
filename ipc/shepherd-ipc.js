@@ -99,7 +99,7 @@ killMarketmaker = function(data) {
             marketmakerGrep = 'tasklist';
             break;
         }
-        
+
         exec(marketmakerGrep, function(error, stdout, stderr) {
           if (stdout.indexOf('marketmaker') > -1) {
             const pkillCmd = osPlatform === 'win32' ? 'taskkill /f /im marketmaker.exe' : 'pkill -15 marketmaker';
@@ -131,7 +131,7 @@ StartMarketMaker = function(data) {
         // Status is 'open' if currently in use or 'closed' if available
         if (status === 'closed') {
             const _coinsListFile = marketmakerDir+'/coinslist.json'
-            
+
             fs.pathExists(_coinsListFile, (err, exists) => {
                   if (exists === true) {
                         console.log('file exist');
@@ -165,9 +165,11 @@ StartMarketMaker = function(data) {
 
 ExecMarketMaker = function(data) {
       //console.log(data);
+      let _customParam;
+
       // start marketmaker via exec
       if (os.platform() === 'win32') {
-        const _customParam = {
+        _customParam = {
               'gui':'uglygui',
               'client':1,
               'userhome':`${process.env.APPDATA}`,
@@ -176,7 +178,7 @@ ExecMarketMaker = function(data) {
         };
       }
       else {
-        const _customParam = {
+        _customParam = {
               'gui':'uglygui',
               'client':1,
               'userhome':`${process.env.HOME}`,

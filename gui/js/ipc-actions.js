@@ -8,7 +8,7 @@ ShepherdIPC = function(data) {
 		console.log(arg) // prints "pong"
 	})
 	ipcRenderer.sendSync('shepherd-command', data)*/
-	
+
 	// USING SYNCHRONOUS METHOD TO SEND AND RECIVE IPC COMMANDS/REPLIES
 	//console.log(ipcRenderer.sendSync('shepherd-commandSync', 'ping')) // prints "pong"
 	let shepherdreply = ipcRenderer.sendSync('shepherd-command', data);
@@ -56,7 +56,7 @@ CheckMMStatus = function(sig) {
 		clearInterval(CheckMM_Interval);
 	} else {
 		$('.mainbody').fadeOut();
-		$('.loginbody').fadeout();
+		$('.loginbody').fadeOut();
 		$('.loadingbody').fadeIn();
 	}
 }
