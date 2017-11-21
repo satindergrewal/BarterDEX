@@ -2032,7 +2032,7 @@ function PortfolioTblDataFn(data) {
             dex_portfolio_coins_tbl_tr += '<td>' + val.kmd_equiv + '</td>';
             dex_portfolio_coins_tbl_tr += `<td>
 											<button class="btn btn-sm btn-default btn_portfolio_coingoal" data-coin="` + val.coin + `" data-auto=false>Set Goal <span class="glyphicon glyphicon-export" aria-hidden="true"></span></button>
-											<button class="btn btn-sm btn-default btn-portfoliogo" data-coin="` + val.coin + `" data-coinname="` + coin_name + `" data-addr="` + val.address + `" data-balance="` + val.amount + `">Exchange <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button>            
+											<button class="btn btn-sm btn-default btn-portfoliogo" data-coin="` + val.coin + `" data-coinname="` + coin_name + `" data-addr="` + val.address + `" data-balance="` + val.amount + `">Exchange <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button>
 											</td>`
             //dex_portfolio_coins_tbl_tr += '<td>' + val.perc + '</td>';
             /*dex_portfolio_coins_tbl_tr += '<td>' + val.relvolume + '</td>';
@@ -2256,7 +2256,7 @@ $('#trading_pair_coin_autoprice_mode').change(function() {
 	var buying_or_selling = $('input[name=trading_pair_options]:checked').val();
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
 	var margin_or_fixed = $('#trading_pair_coin_autoprice_mode').prop('checked');
-	
+
 	if(bot_or_manual == 'tradeportfolio') {
 		if(margin_or_fixed == true) {
 			$('#trading_pair_coin_price_max_min').show();
@@ -2393,7 +2393,7 @@ function autoprice_buy_sell(autoprice_data) {
 			toastr.error(data.error, 'Trade Info');
 		} else if (data.result == 'success') {
 			toastr.success('Order Executed', 'Trade Info');
-			
+
 			var autoprice_mode = '';
 			var percent_on_off = '';
 			var autoprice_modeinfo = '';
@@ -4933,8 +4933,6 @@ function constructTradesHistory() {
 		if (data &&
 				data.swaps &&
 				data.swaps.length) {
-			out += `<h4 style="margin-bottom: 35px">Total trades: ${data.swaps.length}</h4>`;
-
 			let tradesOut = `
 				<table class="trades-history-table">
 					<tr>
@@ -5114,6 +5112,7 @@ function constructTradesHistory() {
 			tradesOut += '</table>';
 
 			if (tradesCounter > 0) {
+				out += `<h4 style="margin-bottom: 35px">Total trades: ${tradesCounter}</h4>`;
 				$('#trades-history-content').html(out + tradesOut);
 			} else {
 				$('#trades-history-content').html('No trade history or swap(s) still in progress');
