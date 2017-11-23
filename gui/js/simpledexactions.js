@@ -155,6 +155,7 @@ $('.porfolio_coins_list tbody').on('click', '.btn-portfoliogo', function() {
 	$('#trading_pair_options_selling').removeAttr("checked");
 	$('#trading_pair_options_buying').attr('checked','checked');
 	$('.trading_pair_coin').selectpicker('val', 'KMD');
+	$('.relvol_basevol_coin').html('KMD');
 	$('.trading_pair_coin_price').val('');
 	$('.trading_pair_destpubkey').val('');
 	$('.trading_pair_coin_volume').val('');
@@ -164,10 +165,18 @@ $('.porfolio_coins_list tbody').on('click', '.btn-portfoliogo', function() {
 	$('#trading_pair_coin_autoprice_mode').bootstrapToggle('on')
 	$('#trading_pair_coin_price_max_min').html('Max');
 
+	$('.trading_sellcoin_ticker_name').empty();
+	$('.trading_sellcoin_balance').empty();
+
+	$('.trading_coin_ticker_name').empty();
+	$('.trading_coin_balance').empty();
+	$('#balance-spinner').show();
+
 	coin = $(this).data('coin');
 
 	if (coin == 'KMD') {
 		$('.trading_pair_coin').selectpicker('val', 'BTC');
+		$('.relvol_basevol_coin').html('BTC');
 	}
 
 	selected_coin = {}
@@ -260,117 +269,6 @@ $('.addcoins_tbl tbody').on('click', '.addcoins_tbl_enable_btn', function() {
 	//$('.selectpicker').selectpicker('refresh');
 });
 
-$('.btn_coindashboard_back').click(function(){
-	console.log('btn_coindashboard_back clicked');
-	console.log($(this).data());
-
-	$('.screen-portfolio').show();
-	$('.screen-coindashboard').hide()
-
-	check_coin_balance(false);
-	CheckPortfolioFn();
-	CheckPortfolio_Interval = setInterval(CheckPortfolioFn,60000);
-});
-
-$('.btn_coindashboard_receive').click(function() {
-	console.log('btn-receive clicked');
-	console.log($(this).data());
-	coin = $(this).data('coin');
-
-	var coin_name = return_coin_name(coin);
-
-	var userpass = sessionStorage.getItem('mm_userpass');
-	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
-	var url = "http://127.0.0.1:7783";
-
-
-	$.ajax({
-		async: true,
-		data: JSON.stringify(ajax_data),
-		dataType: 'json',
-		type: 'POST',
-		url: url
-	}).done(function(data) {
-		// If successful
-		console.log(data);
-		if (!data.userpass === false) {
-			console.log('first marketmaker api call execution after marketmaker started.')
-			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-			sessionStorage.setItem('mm_userpass', data.userpass);
-			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
-
-			var dexmode = sessionStorage.getItem('mm_dexmode');
-			var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
-			if (dexmode == 'dICO') {
-				get_coin_info(selected_dICO_coin);
-			}
-		}
-
-		bootbox.dialog({
-		    //title: 'A custom dialog with init',
-		  onEscape: true,
-		  backdrop: true,
-			message: '<div style="text-align: center; margin-top: -40px;"><img src="img/cryptologo/'+coin+'.png" style="border: 10px solid #fff;border-radius: 50px; background: #fff;"/></div><div style="text-align: center;"><div id="receive_addr_qrcode"></div><pre style="font-size: 18px;">'+data.coin.smartaddress+'</pre class="receive_addr_qrcode_addr"></div>'
-		});
-
-		var qrcode = new QRCode("receive_addr_qrcode");
-		qrcode.makeCode(data.coin.smartaddress); // make another code.
-		$('#receive_addr_qrcode > img').removeAttr('style');
-		$('#receive_addr_qrcode > img').css('display', 'initial');
-		$('#receive_addr_qrcode > img').css('border', '9px solid #f1f1f1','border-radius','5px','margin', '5px');
-		$('#receive_addr_qrcode > img').css('border-radius','5px');
-		$('#receive_addr_qrcode > img').css('margin', '5px');
-
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		// If fail
-		console.log(textStatus + ': ' + errorThrown);
-	});
-})
-
-
-
-$('.btn_coindashboard_enable').click(function() {
-	console.log('btn-enable clicked');
-	//console.log($(this).data());
-
-	var electrum_option = $('#coindashboard-toggle').prop('checked');
-
-	//console.log(electrum_option);
-
-	var enable_data = $(this).data();
-	enable_data['electrum'] = electrum_option;
-	//console.log(enable_data);
-
-	enable_disable_coin(enable_data);
-});
-
-$('.btn_coindashboard_disable').click(function() {
-	console.log('btn-disable clicked');
-	//console.log($(this).data());
-
-	var electrum_option = $('#coindashboard-toggle').prop('checked');
-
-	//console.log(electrum_option);
-
-	var enable_data = $(this).data();
-	enable_data['electrum'] = electrum_option;
-	//console.log(enable_data);
-
-	enable_disable_coin(enable_data);
-});
-
-
-$('.btn_coindashboard_send').click(function(e) {
-	e.preventDefault();
-	console.log('btn-send clicked');
-	console.log($(this).data());
-	$('.screen-coindashboard').hide()
-	$('.screen-sendcoin').show();
-	check_coin_balance(false);
-	$('.sendcoin-title').html('Send ('+$('.coindashboard-balance').html()+' '+$(this).data('coin')+')');
-	$('.sendcoin-title').data('coin', $(this).data('coin'));
-});
-
 $('#debug-exec').click(function(e) {
 	var ajax_data = $('#debug-payload').val();
 	var url = "http://127.0.0.1:7783";
@@ -389,157 +287,19 @@ $('#debug-exec').click(function(e) {
 	});
 });
 
-$('.btn-sendcoin').click(function(e){
-	e.preventDefault();
-	console.log('btn-sendcoin clicked');
-	//console.log($(this).data());
-
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin = selected_coin.coin;
-	console.log(coin);
-
-	var to_addr = $('#send-toaddr').val();
-	var send_amount = $('#send-amount').val();
-	//console.log(to_addr);
-	//console.log(send_amount);
-
-	var output_data = {};
-	output_data[to_addr] = send_amount;
-	//console.log(output_data);
-
-	var userpass = sessionStorage.getItem('mm_userpass');
-	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": coin, "outputs": [output_data]};
-	var url = "http://127.0.0.1:7783";
-
-	console.log(ajax_data);
-
-
-
-	var a1 = $.ajax({
-			async: true,
-			data: JSON.stringify(ajax_data),
-			dataType: 'json',
-			type: 'POST',
-			url: url
-		}),
-		a2 = a1.then(function(data) {
-			// .then() returns a new promise
-			console.log(data);
-			if (data.complete == false) {
-				toastr.error('Unsuccessful Transaction. Please try again.','Tansaction info');
-			}
-			if (data.complete == true) {
-				bootbox.confirm({
-					onEscape: true,
-					backdrop: true,
-					message: `<b>Send</b>: `+send_amount+` `+ajax_data.coin+`<br>
-									<b>To</b>: `+to_addr+`<br>`,
-					buttons: {
-						confirm: {
-							label: 'Confirm',
-							className: 'btn-primary'
-						},
-						cancel: {
-							label: 'Cancel',
-							className: 'btn-default'
-						}
-					},
-					callback: function (result) {
-						console.log('This was logged in the callback: ' + result);
-
-						if (result == true) {
-							var ajax_data2 = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": data.hex};
-							console.log(ajax_data2);
-
-							toastr.info('Transaction Executed', 'Transaction Status');
-
-							$.ajax({
-									async: true,
-									data: JSON.stringify(ajax_data2),
-									dataType: 'json',
-									type: 'POST',
-									url: url
-								})
-						} else {
-							console.log('Sending Transaction operation canceled.');
-							return {'output': 'canceled'};
-						}
-					}
-				});
-			}
-	});
-
-	a2.done(function(data) {
-		console.log(data);
-	});
-});
-
-
-$('.btn-sendcoinclose').click(function(e) {
-	e.preventDefault();
-	console.log('btn-sendcoinclose clicked');
-	console.log($(this).data());
-	$('.screen-coindashboard').show()
-	$('.screen-sendcoin').hide();
-	$('#send-toaddr').val('');
-	$('#send-amount').val('');
-	check_coin_balance_Interval = setInterval(check_coin_balance,3000);
-});
-
-
-$('.btn_coindashboard_inventory').click(function(e) {
-	e.preventDefault();
-	console.log('btn-inventory clicked');
-	console.log($(this).data());
-
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin = selected_coin.coin;
-	console.log(coin);
-
-	$('.screen-coindashboard').hide()
-	$('.screen-inventory').show();
-	check_coin_balance(false);
-	$('.inventory-title').html('Manage Inventory ('+$('.coindashboard-balance').html()+' '+coin+')');
-	$('.inventory-title').data('coin', coin);
-	$('.coininventory[data-coin]').attr('data-coin', coin);
-	//$('.coininventory[data-coin]').attr('data-pair', $(this).data('pair'));
-	$('.coininventory[data-coin]').attr('data-addr', selected_coin.addr);
-	$('.inventory-sliderTotalCoin').html(' '+coin);
-
-	$('.dex_showinv_alice_tbl tbody').html('<th><div style="text-align: center;">Loading...</div></th>');
-	$('.dex_showlist_unspents_tbl tbody').html('<th><div style="text-align: center;">Loading...</div></th>');
-
-	check_coin_inventory(coin);
-	check_coin_listunspent($(this).data());
-
-	calc_data = {"coin": coin, "balance": $('.coindashboard-balance').html()};
-	clac_coin_inventory(calc_data);
-});
-
-/*$('.btn-inventoryclose').click(function(e) {
-	e.preventDefault();
-	console.log('btn-inventoryclose clicked');
-	//console.log($(this).data());
-	$('.screen-coindashboard').show()
-	$('.screen-inventory').hide();
-	$('.dex_showinv_alice_tbl tbody').empty();
-	$('.dex_showlist_unspents_tbl tbody').empty();
-	$('.RawJSONInventory-output').empty();
-	check_coin_balance_Interval = setInterval(check_coin_balance,3000);
-});*/
 
 $('.btn-inventoryclose').click(function(e) {
 	e.preventDefault();
 	console.log('btn-inventoryclose clicked');
-	//console.log($(this).data());
+	console.log($(this).data());
 	$('.screen-exchange').show()
 	$('.screen-inventory').hide();
 	$('.dex_showinv_alice_tbl tbody').empty();
 	$('.dex_showlist_unspents_tbl tbody').empty();
 	$('.RawJSONInventory-output').empty();
-	$('.coin_ticker').html(_coin);
+	$('.coin_ticker').html($(this).attr('data-coin'));
 	$.each($('.coinexchange[data-coin]'), function(index, value) {
-		$('.coinexchange[data-coin]').data('coin', _coin);
+		$('.coinexchange[data-coin]').data('coin', $(this).attr('data-coin'));
 	});
 
 	check_coin_balance(false);
@@ -759,6 +519,19 @@ $('.btn-exchangeclose').click(function(e){
 	//check_coin_balance_Interval = setInterval(check_coin_balance(),3000);
 	//check_coin_balance();
 
+	$('.porfolio_coins_list tbody').empty();
+	var actiavte_portfolio_coins_list_spinner = ''
+	actiavte_portfolio_coins_list_spinner += '<th colspan="7">';
+      actiavte_portfolio_coins_list_spinner += '<div style="text-align: center; height: 100px;">';
+        actiavte_portfolio_coins_list_spinner += '<svg id="portfolio-coins-spinner">';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path2" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path3" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path4" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+        actiavte_portfolio_coins_list_spinner += '</svg>';
+      actiavte_portfolio_coins_list_spinner += '</div>';
+    actiavte_portfolio_coins_list_spinner += '</th>';
+    $('.porfolio_coins_list tbody').append(actiavte_portfolio_coins_list_spinner);
 	CheckPortfolioFn();
 	CheckPortfolio_Interval = setInterval(CheckPortfolioFn,60000);
 });
@@ -795,6 +568,7 @@ $('.btn-bot_action').click(function(e){
 	console.log('btn-botlistrefresh clicked');
 	console.log($(this).data());
 	console.log($(this).data('action'));
+	console.log($('.btn-bot_action').attr('data-action'))
 
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
 
@@ -811,7 +585,8 @@ $('.btn-bot_action').click(function(e){
 		bot_data = {}
 		bot_data.price = pair_price;
 		bot_data.volume = pair_volume;
-		bot_data.action = $(this).data('action');
+		//bot_data.action = $(this).data('action');
+		bot_data.action = $('.btn-bot_action').attr('data-action');
 
 		console.log(bot_data);
 
@@ -843,7 +618,8 @@ $('.btn-bot_action').click(function(e){
 		trade_data.volume = pair_volume;
 		trade_data.trader_only = trader_only;
 		trade_data.destpubkey = trader_pubkey;
-		trade_data.action = $(this).data('action');
+		//trade_data.action = $(this).data('action');
+		trade_data.action = $('.btn-bot_action').attr('data-action');
 
 		//console.log(trade_data);
 
@@ -865,11 +641,13 @@ $('.btn-bot_action').click(function(e){
 		if (margin_or_fixed == true) {
 			trade_data.mode = 'margin';
 			trade_data.modeval = $('.trading_pair_coin_price').val() / 100;
-			trade_data.action = $(this).data('action');
+			//trade_data.action = $(this).data('action');
+			trade_data.action = $('.btn-bot_action').attr('data-action');
 		} else {
 			trade_data.mode = 'fixed';
 			trade_data.modeval = $('.trading_pair_coin_price').val();
-			trade_data.action = $(this).data('action');
+			//trade_data.action = $(this).data('action');
+			trade_data.action = $('.btn-bot_action').attr('data-action');
 		}
 
 		//console.log(trade_data);
@@ -1146,7 +924,7 @@ function enable_disable_coin(data) {
 					coin: data.coin,
 					electrum: false,
 				});
-			}, 300 * 1000);
+			}, 3600 * 1000);
 
 			electrumCoinsKeepAlive[data.coin] = _int;
 		}
@@ -1371,7 +1149,8 @@ function check_coin_inventory(coin) {
 			$('.RawJSONInventory-output').html(JSON.stringify(data, null, 2));
 			$('.dex_showinv_alice_tbl tbody').empty();
 
-			var inv_alice_table_tr = '';
+			// Disabled since v0.6.8-beta
+			/*var inv_alice_table_tr = '';
 			inv_alice_table_tr += '<tr>';
 				inv_alice_table_tr += '<th>Index</th>';
 				inv_alice_table_tr += '<th>Coin</th>';
@@ -1398,7 +1177,7 @@ function check_coin_inventory(coin) {
 				inv_alice_table_tr += '</tr>';
 
 				$('.dex_showinv_alice_tbl tbody').append(inv_alice_table_tr);
-			})
+			})*/
 
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -1408,12 +1187,12 @@ function check_coin_inventory(coin) {
 }
 
 
-function check_coin_listunspent(coin_data) {
-	console.log(coin_data);
+function check_coin_listunspent(coin_listunspent_data) {
+	console.log(coin_listunspent_data);
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
-	var ajax_data = {"userpass":userpass,"method":"listunspent","coin":coin_data.coin,"address":coin_data.addr};
+	var ajax_data = {"userpass":userpass,"method":"listunspent","coin":coin_listunspent_data.coin,"address":coin_listunspent_data.addr};
 	var url = "http://127.0.0.1:7783";
 
 	$.ajax({
@@ -1422,32 +1201,39 @@ function check_coin_listunspent(coin_data) {
 		dataType: 'json',
 		type: 'POST',
 		url: url
-	}).done(function(data) {
+	}).done(function(coin_listunspent_output_data) {
 		// If successful
-		//console.log(data);
+		console.log(coin_listunspent_output_data);
 
 		$('.dex_showlist_unspents_tbl tbody').empty();
 		var show_list_unspents_tbl_tr = '';
 		show_list_unspents_tbl_tr += '<tr>';
 			show_list_unspents_tbl_tr += '<th style="width: 30px;">Index</th>';
-			show_list_unspents_tbl_tr += '<th>Coin</th>';
-			show_list_unspents_tbl_tr += '<th>Height</th>';
-			show_list_unspents_tbl_tr += '<th>TX Position</th>';
-			show_list_unspents_tbl_tr += '<th>Value</th>';
-			show_list_unspents_tbl_tr += '<th>TX Hash</th>';
+			show_list_unspents_tbl_tr += '<th>Coin Info</th>';
+			show_list_unspents_tbl_tr += '<th>Value info</th>';
+			show_list_unspents_tbl_tr += '<th>Transaction Info</th>';
 			show_list_unspents_tbl_tr += '</tr>';
 		$('.dex_showlist_unspents_tbl tbody').append(show_list_unspents_tbl_tr);
-		$.each(data, function(index, val) {
+		$.each(coin_listunspent_output_data, function(index, val) {
 			//console.log(index);
 			//console.log(val);
 			show_list_unspents_tbl_tr = '';
 			show_list_unspents_tbl_tr += '<tr>';
 				show_list_unspents_tbl_tr += '<td>' + index + '</td>';
-				show_list_unspents_tbl_tr += '<td>' + coin_data.coin + '</td>';
-				show_list_unspents_tbl_tr += '<td>' + val.height + '</td>';
-				show_list_unspents_tbl_tr += '<td>' + val.tx_pos + '</td>';
-				show_list_unspents_tbl_tr += '<td>' + (parseFloat(val.value)/100000000).toFixed(8) + ' ' + coin_data.coin + '</td>';
-				show_list_unspents_tbl_tr += '<td>' + val.tx_hash + '</td>';
+				show_list_unspents_tbl_tr += `<td>
+												<b>Coin:</b> `+ coin_listunspent_data.coin +`<br>
+												<b>Account:</b> `+ val.account +`<br>
+												<b>Address:</b> `+ val.address +`<br>
+												</td>`;
+				show_list_unspents_tbl_tr += `<td>
+												<b>Amount:</b> `+ (parseFloat(val.amount)/100000000).toFixed(8) + ' ' + coin_listunspent_data.coin +`<br>
+												<b>Confirmations:</b> `+ val.confirmations +`<br>
+												<b>Interest:</b> `+ val.interest +`<br>
+												</td>`;
+				show_list_unspents_tbl_tr += `<td>
+												<b>scriptPubKey:</b> `+ val.scriptPubKey +`<br>
+												<b>TxID:</b> `+ val.txid +`<br>
+												</td>`;
 			show_list_unspents_tbl_tr += '</tr>';
 
 			$('.dex_showlist_unspents_tbl tbody').append(show_list_unspents_tbl_tr);
@@ -1657,71 +1443,121 @@ function clac_coin_inventory(data) {
 }
 
 
-function make_inventory_withdraw(data) {
+function make_inventory_withdraw(mk_inv_data) {
 	//console.log(data);
-	coin = data.coin;
+	coin = mk_inv_data.coin;
 
 	var userpass = sessionStorage.getItem('mm_userpass');
-	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": data.coin, "outputs": data.outputs};
+	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": mk_inv_data.coin, "outputs": mk_inv_data.outputs};
 	var url = "http://127.0.0.1:7783";
 
 	console.log(ajax_data);
+	console.log(JSON.stringify(ajax_data));
 
-	var a1 = $.ajax({
-			async: true,
-			data: JSON.stringify(ajax_data),
-			dataType: 'json',
-			type: 'POST',
-			url: url
-		}),
-		a2 = a1.then(function(data) {
-			// .then() returns a new promise
-			console.log(data);
-			if (data.complete == false) {
-				toastr.error('Uncessful Transaction. Please try again.','Tansaction info');
-			}
-			if (data.complete == true) {
-				bootbox.confirm({
-					onEscape: true,
-					backdrop: true,
-					message: 'Please confirm if you are ready to make inventory.',
-					buttons: {
-						confirm: {
-							label: 'Confirm',
-							className: 'btn-primary'
-						},
-						cancel: {
-							label: 'Cancel',
-							className: 'btn-default'
+
+	$.ajax({
+	    data: JSON.stringify(ajax_data),
+	    //dataType: 'json',
+	    type: 'POST',
+	    url: url
+	}).done(function(mk_inv_withdraw_data) {
+		console.log(mk_inv_withdraw_data);
+		var paprsed_mk_inv_withdraw_data = JSON.parse(mk_inv_withdraw_data);
+
+		if (paprsed_mk_inv_withdraw_data.complete == false) {
+			toastr.error('Uncessful Transaction. Please try again.','Tansaction info');
+		}
+		if (paprsed_mk_inv_withdraw_data.complete == true) {
+			var mk_inv_confirm_bootbox = bootbox.dialog({
+				backdrop: true,
+				onEscape: true,
+				message: `<p>Sending a transaction to make small deposit change in your address for coin: <b>` + mk_inv_data.coin + `</b></p>
+				<p>Please confirm if you wish to proceed sending this transaction. Regular Transaction fee applies to make this deposit change.<p><br>` + JSON.stringify(mk_inv_data.outputs, null, 2),
+				closeButton: true,
+				size: 'medium',
+
+				buttons: {
+					cancel: {
+						label: "Cancel",
+						className: 'btn-default',
+						callback: function(){
 						}
 					},
-					callback: function (result) {
-						console.log('This was logged in the callback: ' + result);
-
-						if (result == true) {
-							var ajax_data2 = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": data.hex};
-							console.log(ajax_data2);
-
-							toastr.info('Transaction Executed', 'Transaction Status');
-
-							return $.ajax({
-									async: true,
-									data: JSON.stringify(ajax_data2),
-									dataType: 'json',
-									type: 'POST',
-									url: url
-								})
-						} else {
-							console.log('Sending Transaction operation canceled.');
-							return {'output': 'canceled'};
+					ok: {
+						label: "Confirm",
+						className: 'btn-primary btn_mk_inv_confirm_bootbox',
+						callback: function(){
+							mk_inv_sendrawtx(paprsed_mk_inv_withdraw_data, mk_inv_data.coin);
 						}
 					}
-				});
-			}
+				}
+			});
+			mk_inv_confirm_bootbox.init(function(){
+				console.log('mk_inv_confirm_bootbox dialog opened.')
+			});
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    // If fail
+	    console.log(textStatus + ': ' + errorThrown);
 	});
+}
 
-	a2.done(function(data) {
-		console.log(data);
+
+function mk_inv_sendrawtx(mk_inv_rawtx_data,mk_inv_rawtx_coin) {
+	console.log(mk_inv_rawtx_data);
+	console.log(mk_inv_rawtx_coin);
+	
+	
+	
+	if (mk_inv_rawtx_data.hasOwnProperty('withdraw')) { console.log(mk_inv_rawtx_data.withdraw.hex); }
+
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var mypubkey = sessionStorage.getItem('mm_mypubkey');
+	var ajax_data = {"userpass":userpass,"method":"sendrawtransaction","coin": mk_inv_rawtx_coin, "signedtx": (mk_inv_rawtx_data.hasOwnProperty('withdraw') ? mk_inv_rawtx_data.withdraw.hex : mk_inv_rawtx_data.hex) };
+	var url = "http://127.0.0.1:7783";
+
+	console.log(ajax_data);
+	console.log(JSON.stringify(ajax_data));
+
+	$.ajax({
+	    data: JSON.stringify(ajax_data),
+	    //dataType: 'json',
+	    type: 'POST',
+	    url: url
+	}).done(function(mk_inv_sendrawtx_output_data) {
+		// If successful
+		console.log(mk_inv_sendrawtx_output_data);
+		var parsed_mk_inv_sendrawtx_output_data = '';
+		try {
+			parsed_mk_inv_sendrawtx_output_data = JSON.parse(bot_output_data);
+			console.log(parsed_mk_inv_sendrawtx_output_data);
+
+			if ( !parsed_mk_inv_sendrawtx_output_data.hasOwnProperty('error') === false && parsed_mk_inv_sendrawtx_output_data.error === false) {
+				toastr.error(parsed_mk_inv_sendrawtx_output_data.error.message, 'Transaction Info');
+			} else if (parsed_mk_inv_sendrawtx_output_data.result == null) {
+				bootbox.alert('<p>Error making withdraw transaction: </p><br>' + JSON.stringify(parsed_mk_inv_sendrawtx_output_data.error, null, 2));
+			} else if (parsed_mk_inv_sendrawtx_output_data.result == 'success') {
+				toastr.info('Low no. of UTXOs<br>Please try again in 1 Minute.', 'Transaction Status');
+			}
+		} catch(e) {
+			console.log(e);
+			var txid_explorer = '';
+			if(mk_inv_rawtx_coin == 'MNZ') {
+				txid_explorer = 'https://www.mnzexplorer.com/tx/'
+			} else if(mk_inv_rawtx_coin == 'KMD') {
+				txid_explorer = 'https://www.kmd.host/tx/'
+			} else if(mk_inv_rawtx_coin == 'BTC') {
+				txid_explorer = 'https://www.blocktrail.com/BTC/tx/'
+			} else if(mk_inv_rawtx_coin == 'ZEC') {
+				txid_explorer = 'https://zchain.online/tx/'
+			}
+
+			bootbox.alert(`Transaction Sent Successfully. Here's the Transaction ID:<br>
+				<a href="#" onclick="shell.openExternal('`+txid_explorer+mk_inv_sendrawtx_output_data+`'); return false;">` + mk_inv_sendrawtx_output_data + `</a>`);
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    // If fail
+	    console.log(textStatus + ': ' + errorThrown);
 	});
 }
 
@@ -1925,6 +1761,19 @@ function addcoins_dialog(){
 					console.log(addcoin_data);
 
 					enable_disable_coin(addcoin_data);
+					$('.porfolio_coins_list tbody').empty();
+					var actiavte_portfolio_coins_list_spinner = ''
+					actiavte_portfolio_coins_list_spinner += '<th colspan="7">';
+						actiavte_portfolio_coins_list_spinner += '<div style="text-align: center; height: 100px;">';
+							actiavte_portfolio_coins_list_spinner += '<svg id="portfolio-coins-spinner">';
+								actiavte_portfolio_coins_list_spinner += '<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+								actiavte_portfolio_coins_list_spinner += '<circle class="path2" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+								actiavte_portfolio_coins_list_spinner += '<circle class="path3" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+								actiavte_portfolio_coins_list_spinner += '<circle class="path4" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+							actiavte_portfolio_coins_list_spinner += '</svg>';
+						actiavte_portfolio_coins_list_spinner += '</div>';
+					actiavte_portfolio_coins_list_spinner += '</th>';
+					$('.porfolio_coins_list tbody').append(actiavte_portfolio_coins_list_spinner);
 					CheckPortfolioFn();
 
 				}
@@ -1999,22 +1848,26 @@ function CheckPortfolioFn(sig) {
 }
 
 
-function PortfolioTblDataFn(data) {
-	//console.log(data);
+function PortfolioTblDataFn(portfolio_tbl_data) {
+	console.log(portfolio_tbl_data.portfolio.length);
+	if (portfolio_tbl_data.portfolio &&
+			portfolio_tbl_data.portfolio.length) {
+		$('#portfolio-coins-spinner').hide();
+	}
 
-	$('.portfolio_kmd_equiv').html(data.kmd_equiv);
-	$('.portfolio_buycoin').html(data.buycoin);
-	$('.portfolio_buyforce').html(data.buyforce);
-	$('.portfolio_sellcoin').html(data.sellcoin);
-	$('.portfolio_sellforce').html(data.sellforce);
-	$('.portfolio_base').html(data.base);
-	$('.portfolio_rel').html(data.rel);
-	$('.portfolio_relvolume').html(data.relvolume);
+	$('.portfolio_kmd_equiv').html(portfolio_tbl_data.kmd_equiv);
+	$('.portfolio_buycoin').html(portfolio_tbl_data.buycoin);
+	$('.portfolio_buyforce').html(portfolio_tbl_data.buyforce);
+	$('.portfolio_sellcoin').html(portfolio_tbl_data.sellcoin);
+	$('.portfolio_sellforce').html(portfolio_tbl_data.sellforce);
+	$('.portfolio_base').html(portfolio_tbl_data.base);
+	$('.portfolio_rel').html(portfolio_tbl_data.rel);
+	$('.portfolio_relvolume').html(portfolio_tbl_data.relvolume);
 
 	$('.dex_portfolio_coins_tbl tbody').empty();
 
 	$('.porfolio_coins_list tbody').empty();
-	$.each(data.portfolio, function(index, val) {
+	$.each(portfolio_tbl_data.portfolio, function(index, val) {
 		//console.log(index);
 		console.log(val);
 
@@ -2137,6 +1990,19 @@ function PortfolioChartUpdate(chart_data) {
 
 $('.btn-refreshportfolio').click(function() {
 	console.log('clicked refresh button at dex portfolio charts');
+	$('.porfolio_coins_list tbody').empty();
+	var actiavte_portfolio_coins_list_spinner = ''
+	actiavte_portfolio_coins_list_spinner += '<th colspan="7">';
+      actiavte_portfolio_coins_list_spinner += '<div style="text-align: center; height: 100px;">';
+        actiavte_portfolio_coins_list_spinner += '<svg id="portfolio-coins-spinner">';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path2" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path3" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+          actiavte_portfolio_coins_list_spinner += '<circle class="path4" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+        actiavte_portfolio_coins_list_spinner += '</svg>';
+      actiavte_portfolio_coins_list_spinner += '</div>';
+    actiavte_portfolio_coins_list_spinner += '</th>';
+    $('.porfolio_coins_list tbody').append(actiavte_portfolio_coins_list_spinner);
 	CheckPortfolioFn();
 });
 
@@ -2247,6 +2113,19 @@ function set_coin_goal(goal_data){
 	    console.log(textStatus + ': ' + errorThrown);
 	});
 
+	$('.porfolio_coins_list tbody').empty();
+	var actiavte_portfolio_coins_list_spinner = ''
+	actiavte_portfolio_coins_list_spinner += '<th colspan="7">';
+		actiavte_portfolio_coins_list_spinner += '<div style="text-align: center; height: 100px;">';
+			actiavte_portfolio_coins_list_spinner += '<svg id="portfolio-coins-spinner">';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path2" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path3" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path4" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+			actiavte_portfolio_coins_list_spinner += '</svg>';
+		actiavte_portfolio_coins_list_spinner += '</div>';
+	actiavte_portfolio_coins_list_spinner += '</th>';
+	$('.porfolio_coins_list tbody').append(actiavte_portfolio_coins_list_spinner);
 	CheckPortfolioFn();
 }
 
@@ -2636,7 +2515,7 @@ function manual_buy_sell(mt_data) {
 					toastr.error('No withdraw info found. Please try again with lower buy amount.', 'Bot Info');
 				}*/
 			}
-			if (data.error == 'cant find alice utxo that is big enough') {
+			if (data.error == 'cant find utxo that is close enough in size') {
 				toastr.error(data.error, 'Trade Info');
 			}
 			if (data.error == 'cant find ordermatch utxo, need to change relvolume to be closer to available') {
@@ -3751,16 +3630,23 @@ function bot_sendrawtx(bot_data) {
 	    //dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(data) {
+	}).done(function(bot_output_data) {
 		// If successful
-		console.log(data);
-		console.log(JSON.stringify(data));
+		console.log(bot_output_data);
+		var parsed_bot_output_data = '';
+		try {
+			parsed_bot_output_data = JSON.parse(bot_output_data);
+			console.log(parsed_bot_output_data);
 
-		if (!data.error === false) {
-			toastr.error(data.error.message, 'Transaction Info');
-		} else if (data.result == 'success') {
-			toastr.info('Low no. of UTXOs<br>Please try again in 1 Minute.', 'Transaction Status');
-		} else {
+			if ( !parsed_bot_output_data.hasOwnProperty('error') === false && parsed_bot_output_data.error === false) {
+				toastr.error(parsed_bot_output_data.error.message, 'Transaction Info');
+			} else if (parsed_bot_output_data.result == null) {
+				bootbox.alert('<p>Error making withdraw transaction: </p><br>' + JSON.stringify(parsed_bot_output_data.error, null, 2));
+			} else if (parsed_bot_output_data.result == 'success') {
+				toastr.info('Low no. of UTXOs<br>Please try again in 1 Minute.', 'Transaction Status');
+			}
+		} catch(e) {
+			console.log(e);
 			var txid_explorer = '';
 			if(coin == 'MNZ') {
 				txid_explorer = 'https://www.mnzexplorer.com/tx/'
@@ -3768,10 +3654,12 @@ function bot_sendrawtx(bot_data) {
 				txid_explorer = 'https://www.kmd.host/tx/'
 			} else if(coin == 'BTC') {
 				txid_explorer = 'https://www.blocktrail.com/BTC/tx/'
+			} else if(coin == 'ZEC') {
+				txid_explorer = 'https://zchain.online/tx/'
 			}
 
 			bootbox.alert(`Transaction Sent Successfully. Here's the Transaction ID:<br>
-				<a href="#" onclick="shell.openExternal('`+txid_explorer+data+`'); return false;">` + data + `</a>`);
+				<a href="#" onclick="shell.openExternal('`+txid_explorer+bot_output_data+`'); return false;">` + bot_output_data + `</a>`);
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 	    // If fail
@@ -4358,11 +4246,11 @@ $('.exchange_swap_status_tbl tbody').on('click', '.swapstatus_details', function
 });
 
 
-function check_swap_status_details(swap_data) {
-	console.log(swap_data);
+function check_swap_status_details(swap_status_data) {
+	console.log(swap_status_data);
 
-	var requestid = swap_data.requestid;
-	var quoteid = swap_data.quoteid;
+	var requestid = swap_status_data.requestid;
+	var quoteid = swap_status_data.quoteid;
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"swapstatus","requestid":requestid,"quoteid":quoteid};
@@ -4374,15 +4262,15 @@ function check_swap_status_details(swap_data) {
 	    dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(data) {
+	}).done(function(swap_status_output_data) {
 		// If successful
-		//console.log(data);
+		console.log(swap_status_output_data);
 
-		if (!data.userpass === false) {
+		if (!swap_status_output_data.userpass === false) {
 			console.log('first marketmaker api call execution after marketmaker started.')
-			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-			sessionStorage.setItem('mm_userpass', data.userpass);
-			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+			sessionStorage.setItem('mm_usercoins', JSON.stringify(swap_status_output_data.coins));
+			sessionStorage.setItem('mm_userpass', swap_status_output_data.userpass);
+			sessionStorage.setItem('mm_mypubkey', swap_status_output_data.mypubkey);
 
 			var dexmode = sessionStorage.getItem('mm_dexmode');
 			var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
@@ -4390,30 +4278,43 @@ function check_swap_status_details(swap_data) {
 				get_coin_info(selected_dICO_coin);
 			}
 		} else {
-			result_answer = (data.result == 'success') ? '<h4><span class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Success</span></h4>' : '<h4><span class="label label-danger"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> ' + data.result + '</span></h4>';
-			alice_answer = '<img src="img/cryptologo/'+data.alice.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(data.alice) + ' ('+data.alice+')';
-			bob_answer = '<img src="img/cryptologo/'+data.bob.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(data.bob) + ' ('+data.bob+')';
-			iambob_answer = (data.iambob == 0) ? 'Buyer' : 'Seller';
+			result_answer = (swap_status_output_data.result == 'success') ? '<h4><span class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Success</span></h4>' : '<h4><span class="label label-danger"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> ' + swap_status_output_data.result + '</span></h4>';
+			alice_answer = '<img src="img/cryptologo/'+swap_status_output_data.alice.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(swap_status_output_data.alice) + ' ('+swap_status_output_data.alice+')';
+			bob_answer = '<img src="img/cryptologo/'+swap_status_output_data.bob.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(swap_status_output_data.bob) + ' ('+swap_status_output_data.bob+')';
+			iambob_answer = (swap_status_output_data.iambob == 0) ? 'Buyer' : 'Seller';
+
 
 			var bob_explorer = '';
-			if(data.bob == 'MNZ') {
+			if(swap_status_output_data.bob == 'MNZ') {
 				bob_explorer = 'https://www.mnzexplorer.com/tx/'
-			} else if(data.bob == 'KMD') {
+			} else if(swap_status_output_data.bob == 'KMD') {
 				bob_explorer = 'https://www.kmd.host/tx/'
-			} else if(data.bob == 'BTC') {
+			} else if(swap_status_output_data.bob == 'BTC') {
 				bob_explorer = 'https://www.blocktrail.com/BTC/tx/'
+			} else if(swap_status_output_data.bob == 'ZEC') {
+				bob_explorer = 'https://zchain.online/tx/'
+			} else if(swap_status_output_data.bob == 'LTC') {
+				bob_explorer = 'https://bchain.info/LTC/tx/'
+			} else if(swap_status_output_data.bob == 'HUSH') {
+				bob_explorer = 'https://explorer.myhush.org/tx/'
 			}
 
 			var alice_explorer = '';
-			if(data.alice == 'MNZ') {
+			if(swap_status_output_data.alice == 'MNZ') {
 				alice_explorer = 'https://www.mnzexplorer.com/tx/'
-			} else if(data.alice == 'KMD') {
+			} else if(swap_status_output_data.alice == 'KMD') {
 				alice_explorer = 'https://www.kmd.host/tx/'
-			} else if(data.alice == 'BTC') {
+			} else if(swap_status_output_data.alice == 'BTC') {
 				alice_explorer = 'https://www.blocktrail.com/BTC/tx/'
+			} else if(swap_status_output_data.alice == 'ZEC') {
+				alice_explorer = 'https://zchain.online/tx/'
+			} else if(swap_status_output_data.alice == 'LTC') {
+				alice_explorer = 'https://bchain.info/LTC/tx/'
+			} else if(swap_status_output_data.alice == 'HUSH') {
+				alice_explorer = 'https://explorer.myhush.org/tx/'
 			}
 
-			var time = new Date( data.expiration *1000);
+			var time = new Date( swap_status_output_data.expiration *1000);
 			//var expiration = moment.unix(data.expiration);
 			//var now = moment();
 
@@ -4431,28 +4332,28 @@ function check_swap_status_details(swap_data) {
 			}
 
 			var simplified_dexdetail_tr = '';
-			if (data.iambob == 0) {
+			if (swap_status_output_data.iambob == 0) {
 				console.log("I'm Buyer.");
-				var total_sell_unit = parseFloat(data.values[3])+parseFloat(data.values[6]);
-				var single_unit_price = parseFloat(data.srcamount) / parseFloat(total_sell_unit);
-				var price_per_bought_unit = parseFloat(total_sell_unit) / parseFloat(data.srcamount);
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Price paid in ' + data.alice + ':</b> ' + data.values[3].toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Fee paid in ' + data.alice + ':</b> ' + data.values[6].toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Total ' + data.alice + ' paid:</b> ' + total_sell_unit.toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + data.bob + ' received:</b> ' + data.srcamount.toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>1 ' + data.alice + ' can buy:</b> ' + data.srcamount.toFixed(8) + ' / ' + total_sell_unit.toFixed(8) + ' = ~' + single_unit_price.toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Price paid per ' + data.bob + ':</b> ' + total_sell_unit.toFixed(8) + ' / ' + data.srcamount.toFixed(8) + ' = ' + price_per_bought_unit.toFixed(8) + '</td></tr>';
+				var total_sell_unit = parseFloat(swap_status_output_data.values[3])+parseFloat(swap_status_output_data.values[6]);
+				var single_unit_price = parseFloat(swap_status_output_data.srcamount) / parseFloat(total_sell_unit);
+				var price_per_bought_unit = parseFloat(total_sell_unit) / parseFloat(swap_status_output_data.srcamount);
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Price paid in ' + swap_status_output_data.alice + ':</b> ' + swap_status_output_data.values[3].toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Fee paid in ' + swap_status_output_data.alice + ':</b> ' + swap_status_output_data.values[6].toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Total ' + swap_status_output_data.alice + ' paid:</b> ' + total_sell_unit.toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + swap_status_output_data.bob + ' received:</b> ' + swap_status_output_data.srcamount.toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>1 ' + swap_status_output_data.alice + ' can buy:</b> ' + swap_status_output_data.srcamount.toFixed(8) + ' / ' + total_sell_unit.toFixed(8) + ' = ~' + single_unit_price.toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Price paid per ' + swap_status_output_data.bob + ':</b> ' + total_sell_unit.toFixed(8) + ' / ' + swap_status_output_data.srcamount.toFixed(8) + ' = ' + price_per_bought_unit.toFixed(8) + '</td></tr>';
 			}
 
-			if (data.iambob == 1) {
+			if (swap_status_output_data.iambob == 1) {
 				console.log("I'm Seller.");
-				var total_sell_unit = parseFloat(data.values[0])+parseFloat(data.bobtxfee);
-				var units_sold_at_price = parseFloat(data.values[3]) / parseFloat(total_sell_unit);
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + data.bob + ' sold: </b> = ' + data.values[0].toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Fee paid in ' + data.bob + ': </b> = ' + data.bobtxfee + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>Total ' + data.bob + ' deducted: </b> = ' + total_sell_unit + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + data.alice + ' received: </b> = ' + data.values[3].toFixed(8) + '</td></tr>';
-				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + data.bob + ' sold at price: </b> = ' + data.values[3].toFixed(8) + ' / ' + total_sell_unit.toFixed(8) + ' = ' + units_sold_at_price + '</td></tr>';
+				var total_sell_unit = parseFloat(swap_status_output_data.values[0])+parseFloat(swap_status_output_data.bobtxfee);
+				var units_sold_at_price = parseFloat(swap_status_output_data.values[3]) / parseFloat(total_sell_unit);
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + swap_status_output_data.bob + ' sold: </b> = ' + swap_status_output_data.values[0].toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Fee paid in ' + swap_status_output_data.bob + ': </b> = ' + swap_status_output_data.bobtxfee + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>Total ' + swap_status_output_data.bob + ' deducted: </b> = ' + total_sell_unit + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + swap_status_output_data.alice + ' received: </b> = ' + swap_status_output_data.values[3].toFixed(8) + '</td></tr>';
+				simplified_dexdetail_tr += '<tr><td colspan=2><b>' + swap_status_output_data.bob + ' sold at price: </b> = ' + swap_status_output_data.values[3].toFixed(8) + ' / ' + total_sell_unit.toFixed(8) + ' = ' + units_sold_at_price + '</td></tr>';
 			}
 
 			var swap_status_details_bootbox = bootbox.dialog({
@@ -4479,15 +4380,15 @@ function check_swap_status_details(swap_data) {
 										<tr>
 											<td rowspan=5>Trade info</td>
 											<td>Quote ID</td>
-											<td>` + data.quoteid + `</td>
+											<td>` + swap_status_output_data.quoteid + `</td>
 										</tr>
 										<tr>
 											<td>Request ID</td>
-											<td>` + data.requestid + `</td>
+											<td>` + swap_status_output_data.requestid + `</td>
 										</tr>
 										<tr>
 											<td>Trade id</td>
-											<td>` + data.tradeid + `</td>
+											<td>` + swap_status_output_data.tradeid + `</td>
 										</tr>
 										<tr>
 											<td>Expires In</td>
@@ -4495,7 +4396,7 @@ function check_swap_status_details(swap_data) {
 										</tr>
 										<tr>
 											<td>Source Amount</td>
-											<td>` + data.srcamount + `</td>
+											<td>` + swap_status_output_data.srcamount + `</td>
 										</tr>
 										<tr>
 											<td rowspan=4>Buyer Info</td>
@@ -4504,15 +4405,15 @@ function check_swap_status_details(swap_data) {
 										</tr>
 										<tr>
 											<td>Buyer ID</td>
-											<td>` + data.aliceid + `</td>
+											<td>` + swap_status_output_data.aliceid + `</td>
 										</tr>
 										<tr>
 											<td>Buyer Payment</td>
-											<td class="tbl_alicepayment">` + `<a href="#" onclick="shell.openExternal('`+alice_explorer+data.alicepayment+`'); return false;">` + data.alicepayment + `</a></td>
+											<td class="tbl_alicepayment">` + `<a href="#" onclick="shell.openExternal('`+alice_explorer+swap_status_output_data.alicepayment+`'); return false;">` + swap_status_output_data.alicepayment + `</a></td>
 										</tr>
 										<tr>
 											<td>Buyer Tx Fee</td>
-											<td class="tbl_alicetxfee">` + data.alicetxfee + `</td>
+											<td class="tbl_alicetxfee">` + swap_status_output_data.alicetxfee + `</td>
 										</tr>
 										<tr>
 											<td rowspan=4>Seller Info</td>
@@ -4521,15 +4422,15 @@ function check_swap_status_details(swap_data) {
 										</tr>
 										<tr>
 											<td>Seller Deposit</td>
-											<td class="tbl_bobdeposit">` + `<a href="#" onclick="shell.openExternal('`+bob_explorer+data.bobdeposit+`'); return false;">` + data.bobdeposit + `</a></td>
+											<td class="tbl_bobdeposit">` + `<a href="#" onclick="shell.openExternal('`+bob_explorer+swap_status_output_data.bobdeposit+`'); return false;">` + swap_status_output_data.bobdeposit + `</a></td>
 										</tr>
 										<tr>
 											<td>Seller Payment</td>
-											<td class="tbl_bobpayment"><a href="#" onclick="shell.openExternal('`+bob_explorer+data.bobpayment+`'); return false;">` + data.bobpayment + `</a></td>
+											<td class="tbl_bobpayment"><a href="#" onclick="shell.openExternal('`+bob_explorer+swap_status_output_data.bobpayment+`'); return false;">` + swap_status_output_data.bobpayment + `</a></td>
 										</tr>
 										<tr>
 											<td>Seller Tx Fee</td>
-											<td class="tbl_bobtxfee">` + data.bobtxfee + `</td>
+											<td class="tbl_bobtxfee">` + swap_status_output_data.bobtxfee + `</td>
 										</tr>
 										<tr>
 											<td rowspan=7>Other Info</td>
@@ -4538,19 +4439,19 @@ function check_swap_status_details(swap_data) {
 										`+ simplified_dexdetail_tr +`
 										<!--<tr>
 											<td>Sent Flags</td>
-											<td class="tbl_sentflags">` + JSON.stringify(data.sentflags, null, 2) + `</td>
+											<td class="tbl_sentflags">` + JSON.stringify(swap_status_output_data.sentflags, null, 2) + `</td>
 										</tr>
 										<tr>
 											<td>Values</td>
-											<td class="tbl_values">` + renderValues(data.values) + `</td>
+											<td class="tbl_values">` + renderValues(swap_status_output_data.values) + `</td>
 										</tr>
 										<tr>
 											<td>depositspent</td>
-											<td class="tbl_depositspent">` + data.depositspent + `</td>
+											<td class="tbl_depositspent">` + swap_status_output_data.depositspent + `</td>
 										</tr>
 										<tr>
 											<td>Apayment Spent</td>
-											<td class="tbl_Apaymentspent">`+data.Apaymentspent+`</td>
+											<td class="tbl_Apaymentspent">`+swap_status_output_data.Apaymentspent+`</td>
 										</tr>-->
 									</table>
 								</div>
@@ -4588,21 +4489,33 @@ function check_swap_status_details(swap_data) {
 						url: url
 					}).done(function(dataforblinker) {
 						var bob_explorer = '';
-						if(data.bob == 'MNZ') {
+						if(swap_status_output_data.bob == 'MNZ') {
 							bob_explorer = 'https://www.mnzexplorer.com/tx/'
-						} else if(data.bob == 'KMD') {
+						} else if(swap_status_output_data.bob == 'KMD') {
 							bob_explorer = 'https://www.kmd.host/tx/'
-						} else if(data.bob == 'BTC') {
+						} else if(swap_status_output_data.bob == 'BTC') {
 							bob_explorer = 'https://www.blocktrail.com/BTC/tx/'
+						} else if(swap_status_output_data.bob == 'ZEC') {
+							bob_explorer = 'https://zchain.online/tx/'
+						} else if(swap_status_output_data.bob == 'LTC') {
+							bob_explorer = 'https://bchain.info/LTC/tx/'
+						} else if(swap_status_output_data.bob == 'HUSH') {
+							bob_explorer = 'https://explorer.myhush.org/tx/'
 						}
 
 						var alice_explorer = '';
-						if(data.alice == 'MNZ') {
+						if(swap_status_output_data.alice == 'MNZ') {
 							alice_explorer = 'https://www.mnzexplorer.com/tx/'
-						} else if(data.alice == 'KMD') {
+						} else if(swap_status_output_data.alice == 'KMD') {
 							alice_explorer = 'https://www.kmd.host/tx/'
-						} else if(data.alice == 'BTC') {
+						} else if(swap_status_output_data.alice == 'BTC') {
 							alice_explorer = 'https://www.blocktrail.com/BTC/tx/'
+						} else if(swap_status_output_data.alice == 'ZEC') {
+							alice_explorer = 'https://zchain.online/tx/'
+						} else if(swap_status_output_data.alice == 'LTC') {
+							alice_explorer = 'https://bchain.info/LTC/tx/'
+						} else if(swap_status_output_data.alice == 'HUSH') {
+							alice_explorer = 'https://explorer.myhush.org/tx/'
 						}
 
 						$('.tbl_alicepayment').html(`<a href="#" onclick="shell.openExternal('`+alice_explorer+dataforblinker.alicepayment+`'); return false;">` + dataforblinker.alicepayment + `</a>`);
