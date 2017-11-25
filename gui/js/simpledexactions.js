@@ -211,6 +211,8 @@ $('.porfolio_coins_list tbody').on('click', '.btn-portfoliogo', function() {
 	bot_screen_coin_balance();
 	bot_screen_sellcoin_balance_Interval = setInterval(bot_screen_sellcoin_balance, 30000);
 	bot_screen_sellcoin_balance();
+
+	getZeroConfDepositHistory();
 });
 
 
@@ -297,10 +299,10 @@ $('.btn-inventoryclose').click(function(e) {
 	$('.dex_showinv_alice_tbl tbody').empty();
 	$('.dex_showlist_unspents_tbl tbody').empty();
 	$('.RawJSONInventory-output').empty();
-	$('.coin_ticker').html($(this).attr('data-coin'));
-	$.each($('.coinexchange[data-coin]'), function(index, value) {
-		$('.coinexchange[data-coin]').data('coin', $(this).attr('data-coin'));
-	});
+	//$('.coin_ticker').html($(this).attr('data-coin'));
+	//$.each($('.coinexchange[data-coin]'), function(index, value) {
+		//$('.coinexchange[data-coin]').data('coin', $(this).attr('data-coin'));
+	//});
 
 	check_coin_balance(false);
 	CheckOrderBookFn();
@@ -569,6 +571,7 @@ $('.btn-bot_action').click(function(e){
 	console.log($(this).data());
 	console.log($(this).data('action'));
 	console.log($('.btn-bot_action').attr('data-action'))
+	console.log($(this).attr('data-action'))
 
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
 
@@ -586,7 +589,8 @@ $('.btn-bot_action').click(function(e){
 		bot_data.price = pair_price;
 		bot_data.volume = pair_volume;
 		//bot_data.action = $(this).data('action');
-		bot_data.action = $('.btn-bot_action').attr('data-action');
+		//bot_data.action = $('.btn-bot_action').attr('data-action');
+		bot_data.action = $(this).attr('data-action');
 
 		console.log(bot_data);
 
@@ -619,9 +623,10 @@ $('.btn-bot_action').click(function(e){
 		trade_data.trader_only = trader_only;
 		trade_data.destpubkey = trader_pubkey;
 		//trade_data.action = $(this).data('action');
-		trade_data.action = $('.btn-bot_action').attr('data-action');
+		//trade_data.action = $('.btn-bot_action').attr('data-action');
+		trade_data.action = $(this).attr('data-action');
 
-		//console.log(trade_data);
+		console.log(trade_data);
 
 		if (pair_volume <= 0.01 || pair_price <= 0.01) {
 			console.log('Order is too small. Please try again.');
@@ -642,15 +647,17 @@ $('.btn-bot_action').click(function(e){
 			trade_data.mode = 'margin';
 			trade_data.modeval = $('.trading_pair_coin_price').val() / 100;
 			//trade_data.action = $(this).data('action');
-			trade_data.action = $('.btn-bot_action').attr('data-action');
+			//trade_data.action = $('.btn-bot_action').attr('data-action');
+			trade_data.action = $(this).attr('data-action');
 		} else {
 			trade_data.mode = 'fixed';
 			trade_data.modeval = $('.trading_pair_coin_price').val();
 			//trade_data.action = $(this).data('action');
-			trade_data.action = $('.btn-bot_action').attr('data-action');
+			//trade_data.action = $('.btn-bot_action').attr('data-action');
+			trade_data.action = $(this).attr('data-action');
 		}
 
-		//console.log(trade_data);
+		console.log(trade_data);
 		autoprice_buy_sell(trade_data);
 	}
 });
@@ -714,9 +721,9 @@ $('.btn-trading_coin_balance_refresh').click(function(e){
 })
 
 
-function check_coin_balance(coin_data) {
-	console.log(coin_data);
-	if (coin_data == false) {
+function check_coin_balance(chk_coin_data) {
+	console.log(chk_coin_data);
+	if (chk_coin_data == false) {
 		clearInterval(check_coin_balance_Interval);
 		console.log('checking coin balance stopped.')
 		return
@@ -731,7 +738,7 @@ function check_coin_balance(coin_data) {
 
 
 
-	//if (((coin_data == null) ? coin : coin_data.coin) == 'BTC') {
+	//if (((chk_coin_data == null) ? coin : chk_coin_data.coin) == 'BTC') {
 	if (coin == 'BTC') {
 		$('#coindashboard-toggle').bootstrapToggle('enable');
 	} else {
@@ -757,14 +764,14 @@ function check_coin_balance(coin_data) {
 		dataType: 'json',
 		type: 'POST',
 		url: url
-	}).done(function(data) {
+	}).done(function(chk_coin_output_data) {
 		// If successful
 		//console.log(data);
-		if (!data.userpass === false) {
+		if (!chk_coin_output_data.userpass === false) {
 			console.log('first marketmaker api call execution after marketmaker started.')
-			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-			sessionStorage.setItem('mm_userpass', data.userpass);
-			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+			sessionStorage.setItem('mm_usercoins', JSON.stringify(chk_coin_output_data.coins));
+			sessionStorage.setItem('mm_userpass', chk_coin_output_data.userpass);
+			sessionStorage.setItem('mm_mypubkey', chk_coin_output_data.mypubkey);
 
 			var dexmode = sessionStorage.getItem('mm_dexmode');
 			var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
@@ -773,44 +780,44 @@ function check_coin_balance(coin_data) {
 			}
 		}
 
-		if (!data.error === false && data.error == 'coin is disabled') {
-			console.log(data.coin);
-			console.log('coin '+ data.coin.coin + ' is disabled');
-			$('.btn_coindashboard_send[data-coin="' + data.coin.coin + '"]').hide();
-			$('.btn_coindashboard_receive[data-coin="' + data.coin.coin + '"]').hide();
-			$('.btn_coindashboard_exchange[data-coin="' + data.coin.coin + '"]').hide();
-			$('.btn_coindashboard_inventory[data-coin="' + data.coin.coin + '"]').hide();
-			$('.btn_coindashboard_enable[data-coin="' + data.coin.coin + '"]').show();
-			$('.btn_coindashboard_disable[data-coin="' + data.coin.coin + '"]').hide();
+		if (!chk_coin_output_data.error === false && chk_coin_output_data.error == 'coin is disabled') {
+			console.log(chk_coin_output_data.coin);
+			console.log('coin '+ chk_coin_output_data.coin.coin + ' is disabled');
+			$('.btn_coindashboard_send[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
+			$('.btn_coindashboard_receive[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
+			$('.btn_coindashboard_exchange[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
+			$('.btn_coindashboard_inventory[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
+			$('.btn_coindashboard_enable[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.btn_coindashboard_disable[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
 
 			$('.coindashboard-balance').html('Coin is disabled.<br>Please enable before trading ')
 			$('.coindashboard-balance').css( "font-size", "35px" );
 
 		} else {
 			//console.log(data);
-			console.log(data.coin);
-			//console.log(data.coin.smartaddress);
+			console.log(chk_coin_output_data.coin);
+			//console.log(chk_coin_output_data.coin.smartaddress);
 			//console.log(val);
 
-			$('.btn_coindashboard_send[data-coin="' + data.coin.coin + '"]').show();
-			$('.btn_coindashboard_receive[data-coin="' + data.coin.coin + '"]').show();
-			$('.btn_coindashboard_exchange[data-coin="' + data.coin.coin + '"]').show();
-			$('.btn_coindashboard_inventory[data-coin="' + data.coin.coin + '"]').show();
-			$('.btn_coindashboard_enable[data-coin="' + data.coin.coin + '"]').hide();
-			$('.btn_coindashboard_disable[data-coin="' + data.coin.coin + '"]').show();
-			$('.coindashboard-address[data-coin="' + data.coin.coin + '"]').html(data.coin.smartaddress);
-			$('.coindashboard-title').html(coin_name + ' (' + data.coin.coin + ')');
-			$('.coindashboard-coin').html(data.coin.coin);
+			$('.btn_coindashboard_send[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.btn_coindashboard_receive[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.btn_coindashboard_exchange[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.btn_coindashboard_inventory[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.btn_coindashboard_enable[data-coin="' + chk_coin_output_data.coin.coin + '"]').hide();
+			$('.btn_coindashboard_disable[data-coin="' + chk_coin_output_data.coin.coin + '"]').show();
+			$('.coindashboard-address[data-coin="' + chk_coin_output_data.coin.coin + '"]').html(chk_coin_output_data.coin.smartaddress);
+			$('.coindashboard-title').html(coin_name + ' (' + chk_coin_output_data.coin.coin + ')');
+			$('.coindashboard-coin').html(chk_coin_output_data.coin.coin);
 
 
 			$('.coindashboard-balance').css( "font-size", "55px" );
-			$('.coindashboard-balance').html(data.coin.balance);
-			$('.coindashboard-height').html(data.coin.height);
-			$('.coindashboard-kmdvalue').html(data.coin.KMDvalue);
-			$('.btn_coindashboard_inventory[data-addr]').attr('data-addr', data.coin.smartaddress);
+			$('.coindashboard-balance').html(chk_coin_output_data.coin.balance);
+			$('.coindashboard-height').html(chk_coin_output_data.coin.height);
+			$('.coindashboard-kmdvalue').html(chk_coin_output_data.coin.KMDvalue);
+			$('.btn_coindashboard_inventory[data-addr]').attr('data-addr', chk_coin_output_data.coin.smartaddress);
 		}
 
-		//if (data.error == 'coin is disabled') {
+		//if (chk_coin_output_data.error == 'coin is disabled') {
 			//console.log('coin '+ val + ' is disabled');
 		//}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -833,14 +840,14 @@ function get_coin_info(coin) {
 	    dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(data) {
+	}).done(function(get_coin_info_output_data) {
 	    // If successful
-	   console.log(data);
-	   if (!data.userpass === false) {
+	   console.log(get_coin_info_output_data);
+	   if (!get_coin_info_output_data.userpass === false) {
 			console.log('first marketmaker api call execution after marketmaker started.')
-			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-			sessionStorage.setItem('mm_userpass', data.userpass);
-			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+			sessionStorage.setItem('mm_usercoins', JSON.stringify(get_coin_info_output_data.coins));
+			sessionStorage.setItem('mm_userpass', get_coin_info_output_data.userpass);
+			sessionStorage.setItem('mm_mypubkey', get_coin_info_output_data.mypubkey);
 
 			var dexmode = sessionStorage.getItem('mm_dexmode');
 			var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
@@ -849,12 +856,12 @@ function get_coin_info(coin) {
 			}
 		}
 
-		if (!data.error == true) {
+		if (!get_coin_info_output_data.error == true) {
 			selected_coin = {}
 			selected_coin.coin = coin;
 			selected_coin.coin_name = return_coin_name(coin);
-			selected_coin.addr = data.coin.smartaddress;
-			selected_coin.balance = data.coin.balance;
+			selected_coin.addr = get_coin_info_output_data.coin.smartaddress;
+			selected_coin.balance = get_coin_info_output_data.coin.balance;
 			console.log(selected_coin);
 			sessionStorage.setItem('mm_selectedcoin', JSON.stringify(selected_coin));
 		}
@@ -911,34 +918,34 @@ function get_coins() {
 
 let electrumCoinsKeepAlive = {};
 
-function enable_disable_coin(data) {
-	if (!data.electrum) {
-		if (electrumCoinsKeepAlive[data.coin] &&
-				data.method === 'disable') {
-			clearInterval(electrumCoinsKeepAlive[data.coin]);
-			delete electrumCoinsKeepAlive[data.coin];
+function enable_disable_coin(enable_disable_coin_data) {
+	if (!enable_disable_coin_data.electrum) {
+		if (electrumCoinsKeepAlive[enable_disable_coin_data.coin] &&
+				enable_disable_coin_data.method === 'disable') {
+			clearInterval(electrumCoinsKeepAlive[enable_disable_coin_data.coin]);
+			delete electrumCoinsKeepAlive[enable_disable_coin_data.coin];
 		} else {
 			const _int = setInterval(() => {
 				enable_disable_coin({
 					method: 'enable',
-					coin: data.coin,
+					coin: enable_disable_coin_data.coin,
 					electrum: false,
 				});
 			}, 3600 * 1000);
 
-			electrumCoinsKeepAlive[data.coin] = _int;
+			electrumCoinsKeepAlive[enable_disable_coin_data.coin] = _int;
 		}
 	}
 
-	console.warn('enable disable', data);
+	console.warn('enable disable', enable_disable_coin_data);
 
-	var electrum_option = data.electrum //If 'false', electrum option selected
+	var electrum_option = enable_disable_coin_data.electrum //If 'false', electrum option selected
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var url = "http://127.0.0.1:7783";
 
-	if (data.method === 'disable') {
+	if (enable_disable_coin_data.method === 'disable') {
 		console.warn('disable coin called');
-		var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin};
+		var ajax_data = {"userpass":userpass,"method":"electrum","coin":enable_disable_coin_data.coin};
 
 		$.ajax({
 			async: true,
@@ -946,23 +953,23 @@ function enable_disable_coin(data) {
 			dataType: 'json',
 			type: 'POST',
 			url: url
-		}).done(function(data) {
+		}).done(function(disable_coin_output_data) {
 			console.log('enable_disable_coin', 'electrum removed');
 		});
 	}
 
 	if (electrum_option == false) {
 		console.log(electrum_option);
-		console.log("electrum selected for " + data.coin);
+		console.log("electrum selected for " + enable_disable_coin_data.coin);
 		//var rand_electrum_srv = get_random_electrum_server(data.coin);
-		$.each(electrum_servers_list[data.coin], function(index,val){
+		$.each(electrum_servers_list[enable_disable_coin_data.coin], function(index,val){
 			var ipaddr = _.keys(val);
 			var return_data_ipaddr = ipaddr[0];
 			var return_data_port = val[ipaddr[0]];
 			console.log(return_data_ipaddr);
 			console.log(return_data_port);
 
-			var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin,"ipaddr":return_data_ipaddr,"port":return_data_port};
+			var ajax_data = {"userpass":userpass,"method":"electrum","coin":enable_disable_coin_data.coin,"ipaddr":return_data_ipaddr,"port":return_data_port};
 
 			$.ajax({
 				async: true,
@@ -970,14 +977,14 @@ function enable_disable_coin(data) {
 				dataType: 'json',
 				type: 'POST',
 				url: url
-			}).done(function(data) {
+			}).done(function(enable_electrum_coin_output_data) {
 				// If successful
-				console.log(data);
-				if (!data.userpass === false) {
+				console.log(enable_electrum_coin_output_data);
+				if (!enable_electrum_coin_output_data.userpass === false) {
 					console.log('first marketmaker api call execution after marketmaker started.')
-					sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-					sessionStorage.setItem('mm_userpass', data.userpass);
-					sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+					sessionStorage.setItem('mm_usercoins', JSON.stringify(enable_electrum_coin_output_data.coins));
+					sessionStorage.setItem('mm_userpass', enable_electrum_coin_output_data.userpass);
+					sessionStorage.setItem('mm_mypubkey', enable_electrum_coin_output_data.mypubkey);
 
 					var dexmode = sessionStorage.getItem('mm_dexmode');
 					var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
@@ -1002,17 +1009,15 @@ function enable_disable_coin(data) {
 					}
 				}
 
-				if (!data.error === false) {
+				if (!enable_electrum_coin_output_data.error === false) {
 					//console.log(data.error);
-					if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
-						toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
-					}
-					if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+					toastr.info(enable_electrum_coin_output_data.error,'Coin Status');
+					if (enable_electrum_coin_output_data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
 						bootbox.alert({
 							onEscape: true,
 							backdrop: true,
-							title: "Couldn't find "+data.coin+" locally installed",
-							message: `<p>It seems you don't have `+data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
+							title: "Couldn't find "+enable_disable_coin_data.coin+" locally installed",
+							message: `<p>It seems you don't have `+enable_disable_coin_data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
 							<ol>
 								<li>Make sure your wallet is installed properly.</li>
 								<li>Make sure your wallet is running and synced to network.</li>
@@ -1034,8 +1039,8 @@ function enable_disable_coin(data) {
 		});
 	} else {
 		console.log(electrum_option);
-		console.log("native selected for " + data.coin);
-		var ajax_data = {"userpass":userpass,"method":data.method,"coin":data.coin};
+		console.log("native selected for " + enable_disable_coin_data.coin);
+		var ajax_data = {"userpass":userpass,"method":enable_disable_coin_data.method,"coin":enable_disable_coin_data.coin};
 
 		console.log(ajax_data);
 
@@ -1045,14 +1050,14 @@ function enable_disable_coin(data) {
 		    dataType: 'json',
 		    type: 'POST',
 		    url: url
-		}).done(function(data) {
+		}).done(function(enable_native_coin_output_data) {
 			// If successful
-			console.log(data);
-			if (!data.userpass === false) {
+			console.log(enable_native_coin_output_data);
+			if (!enable_native_coin_output_data.userpass === false) {
 				console.log('first marketmaker api call execution after marketmaker started.')
-				sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-				sessionStorage.setItem('mm_userpass', data.userpass);
-				sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+				sessionStorage.setItem('mm_usercoins', JSON.stringify(enable_native_coin_output_data.coins));
+				sessionStorage.setItem('mm_userpass', enable_native_coin_output_data.userpass);
+				sessionStorage.setItem('mm_mypubkey', enable_native_coin_output_data.mypubkey);
 
 				var dexmode = sessionStorage.getItem('mm_dexmode');
 				var selected_dICO_coin = sessionStorage.getItem('mm_selected_dICO_coin');
@@ -1066,28 +1071,26 @@ function enable_disable_coin(data) {
 				if (ajax_data.status === 'disable') {
 					toastr.success(ajax_data.coin+' Disabled','Coin Status');
 				}
-				//get_coins_list(data.coins);
+				//get_coins_list(enable_native_coin_output_data.coins);
 			} else {
-				//get_coins_list(data);
+				//get_coins_list(enable_native_coin_output_data);
 				if (electrum_option == false) {
 					//get_coins_list('');
 					//$('.refresh_dex_balances').trigger('click');
 				} else {
-					//get_coins_list(data);
+					//get_coins_list(enable_native_coin_output_data);
 				}
 			}
 
-			if (!data.error === false) {
-				//console.log(data.error);
-				if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
-					toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
-				}
-				if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+			if (!enable_native_coin_output_data.error === false) {
+				//console.log(enable_native_coin_output_data.error);
+				toastr.info(enable_native_coin_output_data.error,'Coin Status');
+				if (enable_native_coin_output_data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
 					bootbox.alert({
 						onEscape: true,
 						backdrop: true,
-						title: "Couldn't find "+data.coin+" locally installed",
-						message: `<p>It seems you don't have `+data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
+						title: "Couldn't find "+enable_disable_coin_data.coin+" locally installed",
+						message: `<p>It seems you don't have `+enable_disable_coin_data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
 						<ol>
 							<li>Make sure your wallet is installed properly.</li>
 							<li>Make sure your wallet is running and synced to network.</li>
@@ -1226,7 +1229,7 @@ function check_coin_listunspent(coin_listunspent_data) {
 												<b>Address:</b> `+ val.address +`<br>
 												</td>`;
 				show_list_unspents_tbl_tr += `<td>
-												<b>Amount:</b> `+ (parseFloat(val.amount)/100000000).toFixed(8) + ' ' + coin_listunspent_data.coin +`<br>
+												<b>Amount:</b> `+ (parseFloat(val.amount)).toFixed(8) + ' ' + coin_listunspent_data.coin +`<br>
 												<b>Confirmations:</b> `+ val.confirmations +`<br>
 												<b>Interest:</b> `+ val.interest +`<br>
 												</td>`;
@@ -2323,13 +2326,14 @@ $('input[name=trading_mode_options]').change(function() {
 		$('.trading_pair_lable_text_two').html('Buy');
 		if(buying_or_selling == 'buying') {
 			$('.btn-bot_action').html('BUY');
-			$('.relvol_basevol_label').html("It'll cost you")
+			$('.relvol_basevol_label').html("It'll cost you");
+			$('.btn-bot_action').attr('data-action', 'buy');
 		}
 		if(buying_or_selling == 'selling') {
 			$('.btn-bot_action').html('SELL');
 			$('.relvol_basevol_label').html("You'll get");
+			$('.btn-bot_action').attr('data-action', 'sell');
 		}
-		$('.btn-bot_action').attr('data-action', 'buy');
 		$('.trading_selected_trader_label').hide();
 		$('.trading_selected_trader').hide();
 		$('.trading_pair_coin_autoprice_mode_span').hide();
@@ -2356,14 +2360,16 @@ $('input[name=trading_mode_options]').change(function() {
 		if(buying_or_selling == 'buying') {
 			$('.btn-bot_action').html('BUY');
 			$('.relvol_basevol_label').html("It'll cost you")
+			$('.btn-bot_action').attr('data-action', 'buy');
 		}
 		if(buying_or_selling == 'selling') {
 			$('.btn-bot_action').html('SELL');
 			$('.relvol_basevol_label').html("You'll get");
+			$('.btn-bot_action').attr('data-action', 'sell');
 		}
 		//$('.btn-bot_action').attr('data-action', 'sell');
-		$('.trading_selected_trader_label').show();
-		$('.trading_selected_trader').show();
+		//$('.trading_selected_trader_label').show();
+		//$('.trading_selected_trader').show();
 		$('.trading_pair_coin_autoprice_mode_span').hide();
 		$('#trading_pair_coin_price_max_min').html('Max');
 		$('#trading_pair_coin_price_max_min').show();
@@ -2473,24 +2479,19 @@ function manual_buy_sell(mt_data) {
 	    dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(data) {
+	}).done(function(mt_output_data) {
 		// If successful
-		console.log(data);
+		console.log(mt_output_data);
 
 		$('.trading_pair_coin_price').val('');
 		$('.trading_pair_coin_volume').val('');
 		$('.trading_pair_destpubkey').val('');
 		$('.relvol_basevol').html('');
 
-		if (!data.error === false) {
-			if (data.error == 'invalid parameter') {
-				toastr.warning('Invalid Parameters.', 'Trade Info');
-			}
-			if (data.error == 'cant find buyer utxo that is small enough') {
-				toastr.error(data.error, 'Bot Info');
-			}
-			if (data.error == 'not enough funds') {
-				//toastr.info(data.error + '<br>Balance: ' + data.balance + ' ' + data.coin, 'Bot Info');
+		if (!mt_output_data.error === false) {
+			toastr.error(mt_output_data.error, 'Bot Info');
+			if (mt_output_data.error == 'not enough funds') {
+				//toastr.info(mt_output_data.error + '<br>Balance: ' + mt_output_data.balance + ' ' + mt_output_data.coin, 'Bot Info');
 				bootbox.alert({
 					backdrop: true,
 					onEscape: true,
@@ -2506,26 +2507,16 @@ function manual_buy_sell(mt_data) {
 					<li>Try lower amount of buy which makes final cost in total lower.</li>
 					<li>Logout and login back and try lower amount of buy counts total cost lower than previous attempt.</li>
 					</ul>`});
-				console.log(JSON.stringify(data))
+				console.log(JSON.stringify(mt_output_data))
 
-				/*if (data.withdraw.complete === true) {
-					//bot_sendrawtx(data);
+				/*if (mt_output_data.withdraw.complete === true) {
+					//bot_sendrawtx(mt_output_data);
 					toastr.success('Executed Auto Split Funds. Please try in approx. 30 seconds again.', 'Bot Info');
 				} else {
 					toastr.error('No withdraw info found. Please try again with lower buy amount.', 'Bot Info');
 				}*/
 			}
-			if (data.error == 'cant find utxo that is close enough in size') {
-				toastr.error(data.error, 'Trade Info');
-			}
-			if (data.error == 'cant find ordermatch utxo, need to change relvolume to be closer to available') {
-				toastr.error(data.error, 'Trade Info');
-			}
-			if (data.error == 'only one pending request at a time') {
-				toastr.error(data.error + "<br>Make sure you don't have trading bot or another trade running.", 'Trade Info');
-
-			}
-		} else if (data.result == 'success') {
+		} else if (mt_output_data.result == 'success') {
 			toastr.success('Order Executed', 'Trade Info');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -2549,6 +2540,7 @@ function setOrderPrice(trade_data) {
 	trade_price_plus = trade_data.price * 1.01;
 
 	$('.trading_pair_coin_price').val(trade_price_plus.toFixed(8));
+	toastr.info(`Auto selected price as ${trade_data.price} + 1% = ${trade_price_plus.toFixed(8)}`,'Trade Info');
 
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
 
@@ -2644,9 +2636,10 @@ function CheckOrderBookFn(sig) {
 				//orderbook_bids_tr += '<td>' + val.maxvolume + '</td>';
 				orderbook_bids_tr += '<td>' + val.avevolume + '</td>';
 				orderbook_bids_tr += '<td>' + val.depth + '</td>';
-				orderbook_bids_tr += '<td>' + colorpbk.firstpart + '<font style="color: #' + colorpbk.colorpart1 + '; background-color: #' + colorpbk.colorpart1 + ';">' + colorpbk.char1 + '</font><font style="color: #' + colorpbk.colorpart2 + '; background-color: #' + colorpbk.colorpart2 + ';">' + colorpbk.char2 + '</font><font style="color: #' + colorpbk.colorpart3 + '; background-color: #' + colorpbk.colorpart3 + ';">' + colorpbk.char3 + '</font>' + colorpbk.lastpart + '</td>';
+				//orderbook_bids_tr += '<td>' + colorpbk.firstpart + '<font style="color: #' + colorpbk.colorpart1 + '; background-color: #' + colorpbk.colorpart1 + ';">' + colorpbk.char1 + '</font><font style="color: #' + colorpbk.colorpart2 + '; background-color: #' + colorpbk.colorpart2 + ';">' + colorpbk.char2 + '</font><font style="color: #' + colorpbk.colorpart3 + '; background-color: #' + colorpbk.colorpart3 + ';">' + colorpbk.char3 + '</font>' + colorpbk.lastpart + '</td>';
 				orderbook_bids_tr += '<td>' + val.age + '</td>';
 				orderbook_bids_tr += '<td>' + val.numutxos + '</td>';
+				orderbook_bids_tr += '<td><span class="glyphicon glyphicon-piggy-bank" aria-hidden="true"></span> ' + val.zcredits + '</td>';
 				$('.orderbook_bids tbody').append(orderbook_bids_tr);
 			})
 
@@ -2682,9 +2675,10 @@ function CheckOrderBookFn(sig) {
 				//orderbook_asks_tr += '<td>' + row_trade_data.totalbuy.toFixed(8) + '</td>';
 				orderbook_asks_tr += '<td>' + val.avevolume + '</td>';
 				orderbook_asks_tr += '<td>' + val.depth + '</td>';
-				orderbook_asks_tr += '<td>' + colorpbk.firstpart + '<font style="color: #' + colorpbk.colorpart1 + '; background-color: #' + colorpbk.colorpart1 + ';">' + colorpbk.char1 + '</font><font style="color: #' + colorpbk.colorpart2 + '; background-color: #' + colorpbk.colorpart2 + ';">' + colorpbk.char2 + '</font><font style="color: #' + colorpbk.colorpart3 + '; background-color: #' + colorpbk.colorpart3 + ';">' + colorpbk.char3 + '</font>' + colorpbk.lastpart + '</td>';
+				//orderbook_asks_tr += '<td>' + colorpbk.firstpart + '<font style="color: #' + colorpbk.colorpart1 + '; background-color: #' + colorpbk.colorpart1 + ';">' + colorpbk.char1 + '</font><font style="color: #' + colorpbk.colorpart2 + '; background-color: #' + colorpbk.colorpart2 + ';">' + colorpbk.char2 + '</font><font style="color: #' + colorpbk.colorpart3 + '; background-color: #' + colorpbk.colorpart3 + ';">' + colorpbk.char3 + '</font>' + colorpbk.lastpart + '</td>';
 				orderbook_asks_tr += '<td>' + val.age + '</td>';
 				orderbook_asks_tr += '<td>' + val.numutxos + '</td>';
+				orderbook_asks_tr += '<td><span class="glyphicon glyphicon-piggy-bank" aria-hidden="true"></span> ' + val.zcredits + '</td>';
 				orderbook_asks_tr += '</tr>';
 				$('.orderbook_asks tbody').append(orderbook_asks_tr);
 			})
@@ -2752,17 +2746,18 @@ function check_my_prices(sig){
 			//console.log(data);
 			$('.exchange_my_orders_tbl tbody').empty();
 			if (!data.error === false) {
-				if (!data.error == 'authentication error you need to make sure userpass is set') {
+				toastr.error(data.error,'My price info')
+				/*if (!data.error == 'authentication error you need to make sure userpass is set') {
 					var exchange_my_orders_tr = '';
 					exchange_my_orders_tr += '<tr>';
 					exchange_my_orders_tr += '<td><div style="text-align: center;">' + data.error + ' for pair ' + base_coin + '/' + rel_coin + '</div></td>';
 					exchange_my_orders_tr += '</tr>';
 					$('.exchange_my_orders_tbl tbody').append(exchange_my_orders_tr);
-				}
+				}*/
 			} else {
 				$.each(data, function(index, val) {
-					console.log(index);
-					console.log(val);
+					//console.log(index);
+					//console.log(val);
 
 					var base_coin_name = return_coin_name(val.base)
 					var rel_coin_name = return_coin_name(val.rel)
@@ -2819,10 +2814,10 @@ $('input[name=trading_pair_options]').change(function() {
 	console.log('trading_pair_options changed');
 
 	var buying_or_selling = $('input[name=trading_pair_options]:checked').val();
-	//console.log(buying_or_selling);
+	console.log(buying_or_selling);
 
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
-	//console.log(bot_or_manual);
+	console.log(bot_or_manual);
 
 	var margin_or_fixed = $('#trading_pair_coin_autoprice_mode').prop('checked');
 
@@ -2841,6 +2836,7 @@ $('input[name=trading_pair_options]').change(function() {
 			$('#trading_pair_coin_price_max_min').html('Max');
 			$('.trading_pair_lable_text_one').html('Max');
 			$('.btn-bot_action').html('BUY');
+			$('.btn-bot_action').attr('data-action', 'buy');
 			$('.relvol_basevol_label').html("It'll cost you")
 		}
 		$('.trading_pair_lable_text_two').html('Buy');
@@ -2862,6 +2858,7 @@ $('input[name=trading_pair_options]').change(function() {
 			$('#trading_pair_coin_price_max_min').html('Min');
 			$('.trading_pair_lable_text_one').html('Min');
 			$('.btn-bot_action').html('SELL');
+			$('.btn-bot_action').attr('data-action', 'sell');
 			$('.relvol_basevol_label').html("You'll get");
 		}
 		$('.trading_pair_lable_text_two').html('Sell');
@@ -3466,6 +3463,7 @@ function buy_sell_precheck(bot_data){
 			//console.log(data.coin.txfee);
 
 			if (!data.error === true && data.error !== 'coin is disabled') {
+				toastr.error(data.error, 'Order precheck info');
 				if (data.coin.txfee >= 100000) {
 					bootbox.alert("Bitcoin Transaction Fee is too high <b>"+ data.coin.txfee / 100000000 + "</b><br> Due to such high BTC transaction fee this order is being stopped to process, since it may affect the completion of this order. Please try agin when Bitcoin transaction fee is lower.");
 					return;
@@ -3557,23 +3555,18 @@ function bot_buy_sell(bot_data) {
 	    dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(data) {
+	}).done(function(bot_output_data) {
 		// If successful
-		console.log(data);
+		console.log(bot_output_data);
 
 		$('.trading_pair_coin_price').val('');
 		$('.trading_pair_coin_volume').val('');
 		$('.relvol_basevol').html('');
 
-		if (!data.error === false) {
-			if (data.error == 'invalid parameter') {
-				toastr.warning('Invalid Parameters.', 'Bot Info');
-			}
-			if (data.error == 'cant find alice utxo that is small enough') {
-				toastr.error(data.error, 'Bot Info');
-			}
-			if (data.error == 'not enough funds') {
-				//toastr.info(data.error + '<br>Balance: ' + data.balance + ' ' + data.coin, 'Bot Info');
+		if (!bot_output_data.error === false) {
+			toastr.error(bot_output_data.error, 'Bot Info');
+			if (bot_output_data.error == 'not enough funds') {
+				//toastr.info(bot_output_data.error + '<br>Balance: ' + bot_output_data.balance + ' ' + bot_output_data.coin, 'Bot Info');
 				bootbox.alert({
 					backdrop: true,
 					onEscape: true,
@@ -3589,17 +3582,17 @@ function bot_buy_sell(bot_data) {
 					<li>Try lower amount of buy which makes final cost in total lower.</li>
 					<li>Logout and login back and try lower amount of buy counts total cost lower than previous attempt.</li>
 					</ul>`});
-				console.log(JSON.stringify(data))
+				console.log(JSON.stringify(bot_output_data))
 
-				if (data.withdraw.complete === true) {
-					bot_sendrawtx(data);
+				if (bot_output_data.withdraw.complete === true) {
+					bot_sendrawtx(bot_output_data);
 					toastr.success('Executed Auto Split Funds. Please try in approx. 30 seconds again.', 'Bot Info');
 				} else {
 					toastr.error('No withdraw info found. Please try again with lower buy amount.', 'Bot Info');
 				}
 			}
-		} else if (data.result == 'success') {
-			toastr.success(data.name + ' started <br> Bot ID: ' + data.botid, 'Bot Info');
+		} else if (bot_output_data.result == 'success') {
+			toastr.success(bot_output_data.name + ' started <br> Bot ID: ' + bot_output_data.botid, 'Bot Info');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 	    // If fail
@@ -3609,17 +3602,17 @@ function bot_buy_sell(bot_data) {
 	check_bot_list();
 }
 
-function bot_sendrawtx(bot_data) {
-	console.log(bot_data);
-	if (bot_data.hasOwnProperty('withdraw')) { console.log(bot_data.withdraw.hex); }
-	var coin = bot_data.coin;
+function bot_sendrawtx(bot_sendrawtx_data) {
+	console.log(bot_sendrawtx_data);
+	if (bot_sendrawtx_data.hasOwnProperty('withdraw')) { console.log(bot_sendrawtx_data.withdraw.hex); }
+	var coin = bot_sendrawtx_data.coin;
 	console.log(coin);
 
 
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
-	var ajax_data = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": (bot_data.hasOwnProperty('withdraw') ? bot_data.withdraw.hex : bot_data.hex) };
+	var ajax_data = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": (bot_sendrawtx_data.hasOwnProperty('withdraw') ? bot_sendrawtx_data.withdraw.hex : bot_sendrawtx_data.hex) };
 	var url = "http://127.0.0.1:7783";
 
 	console.log(ajax_data);
@@ -3630,19 +3623,19 @@ function bot_sendrawtx(bot_data) {
 	    //dataType: 'json',
 	    type: 'POST',
 	    url: url
-	}).done(function(bot_output_data) {
+	}).done(function(bot_sendrawtx_output_data) {
 		// If successful
-		console.log(bot_output_data);
-		var parsed_bot_output_data = '';
+		console.log(bot_sendrawtx_output_data);
+		var parsed_bot_sendrawtx_output_data = '';
 		try {
-			parsed_bot_output_data = JSON.parse(bot_output_data);
-			console.log(parsed_bot_output_data);
+			parsed_bot_sendrawtx_output_data = JSON.parse(bot_sendrawtx_output_data);
+			console.log(parsed_bot_sendrawtx_output_data);
 
-			if ( !parsed_bot_output_data.hasOwnProperty('error') === false && parsed_bot_output_data.error === false) {
-				toastr.error(parsed_bot_output_data.error.message, 'Transaction Info');
-			} else if (parsed_bot_output_data.result == null) {
-				bootbox.alert('<p>Error making withdraw transaction: </p><br>' + JSON.stringify(parsed_bot_output_data.error, null, 2));
-			} else if (parsed_bot_output_data.result == 'success') {
+			if ( !parsed_bot_sendrawtx_output_data.hasOwnProperty('error') === false && parsed_bot_sendrawtx_output_data.error === false) {
+				toastr.error(parsed_bot_sendrawtx_output_data.error.message, 'Transaction Info');
+			} else if (parsed_bot_sendrawtx_output_data.result == null) {
+				bootbox.alert('<p>Error making withdraw transaction: </p><br>' + JSON.stringify(parsed_bot_sendrawtx_output_data.error, null, 2));
+			} else if (parsed_bot_sendrawtx_output_data.result == 'success') {
 				toastr.info('Low no. of UTXOs<br>Please try again in 1 Minute.', 'Transaction Status');
 			}
 		} catch(e) {
@@ -3659,7 +3652,7 @@ function bot_sendrawtx(bot_data) {
 			}
 
 			bootbox.alert(`Transaction Sent Successfully. Here's the Transaction ID:<br>
-				<a href="#" onclick="shell.openExternal('`+txid_explorer+bot_output_data+`'); return false;">` + bot_output_data + `</a>`);
+				<a href="#" onclick="shell.openExternal('`+txid_explorer+bot_sendrawtx_output_data+`'); return false;">` + bot_sendrawtx_output_data + `</a>`);
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 	    // If fail
@@ -4137,7 +4130,16 @@ function bot_screen_sellcoin_balance(sig) {
 					<button class="btn btn-info btn-xs coin_balance_inventory" style="margin-top: 6px;" data-coin="` + coin + `" data-addr="` + data.coin.smartaddress + `" data-balance="` + data.coin.balance + `">Inventory</button>
 				</span>`;
 				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+') <small style="vertical-align: top; margin-left: 10px">' + coin_mode + '</small>'+button_controls);
-				$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				if (data.coin.hasOwnProperty('electrum')) {
+					var electrum_coin_balance_data = {};
+					electrum_coin_balance_data.baserel = 'rel';
+					electrum_coin_balance_data.coin = coin;
+					electrum_coin_balance_data.smartaddress = data.coin.smartaddress;
+					electrum_coin_balance(electrum_coin_balance_data);
+					//$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				} else {
+					$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				}
 				$('#balance-spinner').hide();
 				$('.balance-block').show();
 			}
@@ -4214,7 +4216,16 @@ function bot_screen_coin_balance(sig) {
 					<button class="btn btn-info btn-xs coin_balance_inventory" style="margin-top: 6px;" data-coin="` + coin + `" data-addr="` + data.coin.smartaddress + `" data-balance="` + data.coin.balance + `">Inventory</button>
 				</span>`;
 				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+') <small style="vertical-align: top; margin-left: 10px">' + coin_mode + '</small>'+button_controls);
-				$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				if (data.coin.hasOwnProperty('electrum')) {
+					var electrum_coin_balance_data = {};
+					electrum_coin_balance_data.baserel = 'base';
+					electrum_coin_balance_data.coin = coin;
+					electrum_coin_balance_data.smartaddress = data.coin.smartaddress;
+					electrum_coin_balance(electrum_coin_balance_data);
+					//$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				} else {
+					$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+				}
 			}
 
 			//$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
@@ -4225,6 +4236,37 @@ function bot_screen_coin_balance(sig) {
 		// If fail
 		console.log(textStatus + ': ' + errorThrown);
 	});
+}
+
+
+function electrum_coin_balance(coin_balance_data) {
+	console.log(coin_balance_data);
+
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var mypubkey = sessionStorage.getItem('mm_mypubkey');
+	var ajax_data = {"userpass":userpass,"method":"balance","coin":coin_balance_data.coin,"address":coin_balance_data.smartaddress};
+	var url = "http://127.0.0.1:7783/";
+
+	$.ajax({
+		async: true,
+	    data: JSON.stringify(ajax_data),
+	    dataType: 'json',
+	    type: 'POST',
+	    url: url
+	}).done(function(coin_balance_output_data) {
+		// If successful
+		console.log(coin_balance_output_data);
+		if(coin_balance_data.baserel == 'base'){
+			$('.trading_coin_balance').html(coin_balance_output_data.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin_balance_data.coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + coin_balance_data.smartaddress + '</span>');
+		}
+		if(coin_balance_data.baserel == 'rel'){
+			$('.trading_sellcoin_balance').html(coin_balance_output_data.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin_balance_data.coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + coin_balance_data.smartaddress + '</span>');
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    // If fail
+	    console.log(textStatus + ': ' + errorThrown);
+	});
+
 }
 
 /* Auto Trading Bot END */
@@ -4374,6 +4416,7 @@ function check_swap_status_details(swap_status_data) {
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<h3 class="panel-title"><strong>Full Status</strong></h3>
+									<button class="btn btn-xs btn-warning btn_kickstart_stuck_trade" style="float: right; margin-right: -6px; margin-top: -20px">KICKSTART STUCK TRADE</button>
 								</div>
 								<div class=""> <!-- panel-body -->
 									<table width="100%" class="table table-striped" style="margin-bottom: 0;">
@@ -4433,15 +4476,14 @@ function check_swap_status_details(swap_status_data) {
 											<td class="tbl_bobtxfee">` + swap_status_output_data.bobtxfee + `</td>
 										</tr>
 										<tr>
-											<td rowspan=7>Other Info</td>
+											<td rowspan=8>Other Info</td>
 											<td colspan=2><b>You are:</b> ` + iambob_answer + `</td>
 										</tr>
 										`+ simplified_dexdetail_tr +`
-										<!--<tr>
-											<td>Sent Flags</td>
-											<td class="tbl_sentflags">` + JSON.stringify(swap_status_output_data.sentflags, null, 2) + `</td>
-										</tr>
 										<tr>
+											<td colspan=2><b>Sent Flags:</b> <span class="tbl_sentflags">` + JSON.stringify(swap_status_output_data.sentflags, null, 2) + `</span></td>
+										</tr>
+										<!--<tr>
 											<td>Values</td>
 											<td class="tbl_values">` + renderValues(swap_status_output_data.values) + `</td>
 										</tr>
@@ -4477,6 +4519,19 @@ function check_swap_status_details(swap_status_data) {
 				check_my_prices(false);
 				//bot_screen_coin_balance(false);
 				//bot_screen_sellcoin_balance(false);
+
+				$('.btn_kickstart_stuck_trade').click(function(e) {
+					e.preventDefault();
+					console.log('btn_kickstart_stuck_trade clicked');
+					var remove_finished_swap_file_status = ShepherdIPC({"command":"remove_finished_swap_file", "requestid":swap_status_output_data.requestid, "quoteid":swap_status_output_data.quoteid});
+					if (remove_finished_swap_file_status == 'removed') {
+						console.log(`${swap_status_output_data.requestid}-${swap_status_output_data.quoteid}.finished file removed.`);
+						toastr.success(`${swap_status_output_data.requestid}-${swap_status_output_data.quoteid}.finished file removed.`,'Swap Status Update');
+					} else if (remove_finished_swap_file_status == 'error') {
+						console.log(`Failed to remove ${swap_status_output_data.requestid}-${swap_status_output_data.quoteid} file`);
+						toastr.error(`Failed to remove ${swap_status_output_data.requestid}-${swap_status_output_data.quoteid} file`,'Swap Status Update');
+					}
+				});
 
 				var swapdetail_blinker = null;
 
@@ -5037,3 +5092,220 @@ function constructTradesHistory() {
 }
 
 /* TRADE HISTORY - CREDIT: pbca26 END*/
+
+
+
+
+
+/* ZEROCONF SETTINGS */
+
+$('.btn-refreshzeroconf_settings').click(function(){
+	getZeroConfDepositHistory();
+});
+
+$('.zeroconf_deposits_history_tbl tbody').on('click', '.zconf_deposit_txid_link', function(e) {
+	e.preventDefault();
+	console.log('zconf_deposit_txid_link clicked');
+	console.log($(this).data());
+	shell.openExternal('https://kmd.explorer.supernet.org/tx/'+$(this).data('txid'));
+});
+
+$('.zeroconf_deposits_history_tbl tbody').on('click', '.zconf_deposit_details', function(e) {
+	e.preventDefault();
+	console.log('zconf_deposit_details clicked');
+	console.log($(this).data());
+});
+
+$('.zeroconf_deposits_history_tbl tbody').on('click', '.zconf_deposit_claim', function(e) {
+	e.preventDefault();
+	console.log('zconf_deposit_claim clicked');
+	console.log($(this).data());
+	var addr = $(this).data('address');
+	var expr = $(this).data('expiration');
+	ZeroConfClaim(addr, expr);
+});
+
+$('.btn_zeroconf_deposit').click(function(e){
+	e.preventDefault();
+	console.log('btn_zeroconf_deposit clicked');
+	var deposit_weeks = $('.zeroconf_weeks_select').selectpicker('val');
+	var deposit_amount = $('.zeroconf_deposit_amount').val();
+	console.log(deposit_weeks);
+	console.log(deposit_amount);
+	ZeroConfDeposit(deposit_weeks,deposit_amount);
+});
+
+$('.zeroconf_deposit_amount').keyup(function(){
+	var deposit_amount = $('.zeroconf_deposit_amount').val();
+	//console.log(deposit_amount);
+
+	var empty = false;
+	if (deposit_amount < 10) {
+		console.log('Send Address is empty or less than 10');
+		empty = true;
+	}
+	//console.log(empty);
+
+	if (empty){
+		$('.btn_zeroconf_deposit').attr("disabled", "disabled");
+	} else {
+		$('.btn_zeroconf_deposit').removeAttr("disabled");
+	}
+});
+
+function getZeroConfDepositHistory(){
+	var zeroconf_deposit_history_data = ShepherdIPC({"command":"read_zeroconf_log", "type":"deposit"});
+	//console.log(zeroconf_deposit_history_data);
+	var reversed_zeroconf_deposit_history_data = zeroconf_deposit_history_data.reverse();
+
+	$('.zeroconf_deposits_history_tbl tbody').empty();
+	$.each(reversed_zeroconf_deposit_history_data, function(index, val) {
+		//console.log(index);
+		//console.log(val);
+
+		if(!val.error === false) {
+			var zeroconf_deposits_history_tr = '';
+			zeroconf_deposits_history_tr += '<tr>';
+			//zeroconf_deposits_history_tr += '<td>' + index + '</td>';
+			zeroconf_deposits_history_tr += '<td><div style="color: #e53935; font-size: 15px;"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span> error</div></td>';
+			zeroconf_deposits_history_tr += '<td>-</td>';
+			zeroconf_deposits_history_tr += '</tr>';
+			$('.zeroconf_deposits_history_tbl tbody').append(zeroconf_deposits_history_tr);
+		} else {
+
+			var expiration_time = new Date( val.expiration *1000);
+
+			var zeroconf_deposits_history_tr = '';
+			zeroconf_deposits_history_tr += '<tr>';
+			//zeroconf_deposits_history_tr += '<td>' + index + '</td>';
+			zeroconf_deposits_history_tr += `<td>
+											<b>Address:</b> ${val.address}<br>
+											<b>Deposit:</b> ${val.deposit} KMD<br>
+											<b>Expiration:</b> ${expiration_time}<br>
+											<b>Transaction ID:</b> <a class="zconf_deposit_txid_link" href="#" data-txid="${val.txid}">Open in Explorer</a>
+											</td>`;
+			zeroconf_deposits_history_tr += `<td><button class="btn btn-xs btn-default zconf_deposit_details" data-address="` + val.address + `" data-expiration="` + val.expiration + `" style="display: none;">Details</button>
+												<button class="btn btn-xs btn-success zconf_deposit_claim" data-address="` + val.address + `" data-expiration="` + val.expiration + `" style="margin: 3px;">Claim Deposit</button>
+											</td>`;
+			zeroconf_deposits_history_tr += '</tr>';
+			$('.zeroconf_deposits_history_tbl tbody').append(zeroconf_deposits_history_tr);
+			
+		}
+	});
+}
+
+
+function ZeroConfDeposit(deposit_weeks, deposit_amount) {
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var mypubkey = sessionStorage.getItem('mm_mypubkey');
+	var ajax_data = {"userpass":userpass,"method":"zeroconf_deposit","weeks":deposit_weeks,"amount":deposit_amount,"broadcast": 1};
+	var url = "http://127.0.0.1:7783";
+
+	$.ajax({
+		async: true,
+	    data: JSON.stringify(ajax_data),
+	    dataType: 'json',
+	    type: 'POST',
+	    url: url
+	}).done(function(zconf_deposit_data) {
+		console.log(zconf_deposit_data);
+		var update_deposit_log_file = ShepherdIPC({"command":"update_zeroconf_log", "data":{"logdata": JSON.stringify(zconf_deposit_data),"type":"deposit"}});
+		console.log(update_deposit_log_file);
+		if (!zconf_deposit_data.error === false) {
+			toastr.error(zconf_deposit_data.error, 'ZeroConf Notification');
+		}
+		if (zconf_deposit_data.result == 'success') {
+			var zconf_depoit_bootbox = bootbox.dialog({
+				title: 'ZeroConf security deposit sent!',
+				message: `<b>Address: </b> ${zconf_deposit_data.address}<br>
+						<b>deposit: </b> ${zconf_deposit_data.deposit}<br>
+						<b>expiration: </b> ${zconf_deposit_data.expiration}<br>
+						<a href="#" class="zconf_deposit_txid_bootbox" data-txid="${zconf_deposit_data.txid}">` + zconf_deposit_data.txid + `</a>`,
+				closeButton: false,
+				size: 'medium',
+				buttons: {
+					cancel: {
+						label: "Close",
+						className: 'btn-default',
+						callback: function(){
+						}
+					}
+				}
+			})
+			zconf_depoit_bootbox.init(function(){
+				$('.zconf_deposit_txid_bootbox').click(function(){
+					console.log($(this).data());
+					shell.openExternal('https://kmd.explorer.supernet.org/tx/'+$(this).data('txid'));
+				});
+			});
+			getZeroConfDepositHistory();
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    // If fail
+	    console.log(textStatus + ': ' + errorThrown);
+	});
+}
+
+
+function ZeroConfClaim(claim_address, claim_expiration) {
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var mypubkey = sessionStorage.getItem('mm_mypubkey');
+	var ajax_data = {"userpass":userpass,"method":"zeroconf_claim","address":claim_address,"expiration":claim_expiration};
+	var url = "http://127.0.0.1:7783";
+
+	$.ajax({
+		async: true,
+	    data: JSON.stringify(ajax_data),
+	    dataType: 'json',
+	    type: 'POST',
+	    url: url
+	}).done(function(zconf_claim_data) {
+		console.log(zconf_claim_data);
+		var update_claim_log_file = ShepherdIPC({"command":"update_zeroconf_log", "data":{"logdata": JSON.stringify(zconf_claim_data),"type":"claim"}});
+		console.log(update_claim_log_file);
+		if (!zconf_claim_data.error === false) {
+			toastr.error(zconf_claim_data.error, 'ZeroConf Notification');
+		}
+		if (zconf_claim_data.result == 'success') {
+			var zconf_claim_bootbox = bootbox.dialog({
+				title: 'ZeroConf security claimed!',
+				message: `<b>Claimed: </b> ${zconf_claim_data.claimed}<br>
+							<a href="#" class="zconf_claim_txid_bootbox" data-txid="${zconf_claim_data.txids}">` + zconf_claim_data.txids + `</a>`,
+				closeButton: false,
+				size: 'medium',
+				buttons: {
+					cancel: {
+						label: "Close",
+						className: 'btn-default',
+						callback: function(){
+						}
+					}
+				}
+			})
+			zconf_claim_bootbox.init(function(){
+				$('.zconf_claim_txid_bootbox').click(function(){
+					console.log($(this).data());
+					shell.openExternal('https://kmd.explorer.supernet.org/tx/'+$(this).data('txid'));
+				});
+			});
+
+			bootbox.alert();
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+	    // If fail
+	    console.log(textStatus + ': ' + errorThrown);
+	});
+}
+
+
+
+$('.info_box_for_zeroconf').click(function(e){
+	e.preventDefault();
+	console.log('info_box_for_zeroconf clicked');
+	bootbox.alert({
+		title: `What is Zero Confirmations Feature?`,
+		message: `<p>To use this feature you have to deposit your KMD as security, which goes to a special multisig address. Minimum amount to deposit is 10 KMD, and minumum time to deposit is 1 week. You will get these deposits back automatically once it reaches it's expiration time. If not, then you can hit the claim button to claim your deposited KMDs back.</p>`,
+		size: 'large'
+	});
+})
+/* ZEROCONF SETTINGS END */

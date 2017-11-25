@@ -104,6 +104,11 @@ textarea {
   height: 285px;
 }
 
+.zeroconf_settings_table_div {
+  overflow: scroll;
+  height: 385px;
+}
+
 .orderbook_asks {
   cursor: pointer;
 }
@@ -341,7 +346,7 @@ table tbody tr:first-child td {
 }
 .trades-history-table th,
 .trades-history-table td {
-  padding: 15px;
+  padding: 3px 15px;
 }
 
 .col-red {
