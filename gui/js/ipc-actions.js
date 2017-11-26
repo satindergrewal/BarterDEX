@@ -30,12 +30,14 @@ $('.dexdashboard-btn').click(function(e){
 
 	$('body').css('overflow', 'inherit');
 	$('.dextradeshistory').hide();
+	$('.charts').hide();
 
 	$('.dexdebug').hide();
 	$('.dexdebug-btn').show();
 	$('.dexlogout-btn').show();
 	$('.dexdebug-close-btn').hide();
 	$('.dextradeshistory-btn').show();
+	$('.dexcharts-btn').show();
 
 	//$('.screen-coindashboard').show()
 	$('.screen-exchange').hide();
@@ -54,7 +56,6 @@ $('.dexdashboard-btn').click(function(e){
 	CheckPortfolio_Interval = setInterval(CheckPortfolioFn,60000);
 });
 
-
 $('.dextradeshistory-btn').click(function(e) {
 	if ($('.dextradeshistory').is(":visible")) {
 		$('body').css('overflow', 'inherit');
@@ -68,6 +69,42 @@ $('.dextradeshistory-btn').click(function(e) {
 		$('.navbar-right').children().removeClass('active');
 		$('.dextradeshistory-btn').parent().addClass( "active" );
 		constructTradesHistory();
+	}
+});
+
+function reinitTradingView() {
+	const _feed = widget.options.datafeed._barsPulseUpdater._subscribers;
+	datafeed.unsubscribeBars(Object.keys(_feed)[0]);
+	widget.remove();
+
+	const _base = $("select#chartsBase option").filter(":selected").val();
+	const _rel = $("select#chartsRel option").filter(":selected").val();
+	createTView(`${_base}-${_rel}`);
+}
+
+$('.dexcharts-btn').click(function(e) {
+	/*if ($('.charts-config').html() === '') {
+		renderChartsConfig();
+	}*/
+
+	if ($('.charts').is(":visible")) {
+		const _feed = widget.options.datafeed._barsPulseUpdater._subscribers;
+		datafeed.unsubscribeBars(Object.keys(_feed)[0]);
+		widget.remove();
+		$('body').css('overflow', 'inherit');
+		$('.charts').hide();
+		$('.dexcharts-btn').html('Charts');
+		$('.navbar-right').children().removeClass('active');
+	} else {
+		$('body').css('overflow', 'hidden');
+		$('.charts').show();
+		$('.navbar-right').children().removeClass('active');
+		$('.dexcharts-btn').parent().addClass( "active" );
+		createTView('KMD-MNZ');
+		$('#chartsBase').val('KMD');
+		$('#chartsRel').val('MNZ');
+		$('.charts-base .filter-option').html('KMD');
+		$('.charts-rel .filter-option').html('MNZ');
 	}
 });
 

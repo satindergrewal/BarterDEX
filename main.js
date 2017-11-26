@@ -14,9 +14,10 @@ const electron = require('electron'),
       fs = require('fs-extra'),
       mkdirp = require('mkdirp');
 
-
 var shepherd = require('./ipc/shepherd-ipc');
 const killmm = require('./ipc/killmm');
+const symbols = require('./ipc/makeSymbols');
+const datafeed = require('./ipc/datafeed');
 
 const appBasicInfo = {
   name: 'BarterDEX-Simple',
@@ -104,6 +105,8 @@ function createWindow (status) {
     mainWindow = null
     killmm(true, true);
   })
+
+  mainWindow.coins = symbols.coins;
 }
 
 // This method will be called when Electron has finished

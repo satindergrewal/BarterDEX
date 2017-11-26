@@ -9,6 +9,61 @@ var check_bot_list_Interval = null;
 var bot_screen_coin_balance_Interval = null;
 var bot_screen_sellcoin_balance_Interval = null;
 var shell = require('electron').shell;
+var widget;
+var datafeed;
+
+function renderChartsConfig() {
+	let _out = 'Pick coin pair';
+	const _coins = window.require('electron').remote.getCurrentWindow().coins;
+	let _options = '';
+
+	for (let i = 0; i < _coins.length; i++) {
+    _options += `<option value="${_coins[i]}">${_coins[i]}</option>`;
+	}
+
+	_out += `<select name="rel" class="margin-left-10 selectpicker">${_options}</select>`;
+	_out += `<select name="base" class="margin-left-20 selectpicker">${_options}</select>`;
+
+	//console.warn(_out);
+	//$('.charts-config').append(_out);
+}
+
+function createTView(pair) {
+	datafeed = new Datafeeds.UDFCompatibleDatafeed("http://localhost:8889");
+  widget = new TradingView.widget({
+    fullscreen: true,
+    symbol: pair,
+    //debug: true,
+    interval: 15,
+    container_id: "tv_chart_container",
+    //  BEWARE: no trailing slash is expected in feed URL
+    datafeed: datafeed,
+    library_path: "charting_library/",
+    locale: "en",
+    //  Regression Trend-related functionality is not implemented yet, so it's hidden for a while
+    drawings_access: { type: 'black', tools: [ { name: "Regression Trend" } ] },
+    disabled_features: ["use_localstorage_for_settings", "volume_force_overlay"],
+    charts_storage_url: 'http://saveload.tradingview.com',
+    overrides: {
+      "mainSeriesProperties.style": 1,
+      "symbolWatermarkProperties.color" : "#944"
+    },
+    time_frames: [
+      { text: "5m", resolution: "5" },
+      { text: "15m", resolution: "15" },
+      { text: "30m", resolution: "30" },
+      { text: "60m", resolution: "60" },
+      { text: "120m", resolution: "120" },
+      { text: "240m", resolution: "240" },
+      { text: "1D", resolution: "D" },
+      { text: "1W", resolution: "W" }
+    ],
+    client_id: 'example.com',
+    user_id: ''
+  });
+
+// console.warn(widget);
+}
 
 $(document).ready(function() {
 	var mmstatus = ShepherdIPC({"command":"mmstatus"});
@@ -1509,9 +1564,9 @@ function make_inventory_withdraw(mk_inv_data) {
 function mk_inv_sendrawtx(mk_inv_rawtx_data,mk_inv_rawtx_coin) {
 	console.log(mk_inv_rawtx_data);
 	console.log(mk_inv_rawtx_coin);
-	
-	
-	
+
+
+
 	if (mk_inv_rawtx_data.hasOwnProperty('withdraw')) { console.log(mk_inv_rawtx_data.withdraw.hex); }
 
 	var userpass = sessionStorage.getItem('mm_userpass');
@@ -5189,7 +5244,7 @@ function getZeroConfDepositHistory(){
 											</td>`;
 			zeroconf_deposits_history_tr += '</tr>';
 			$('.zeroconf_deposits_history_tbl tbody').append(zeroconf_deposits_history_tr);
-			
+
 		}
 	});
 }

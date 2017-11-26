@@ -17,7 +17,6 @@ $(document).ready(function() {
 	$('.set_goal_label_portfolio').html($('.sell_coin_p').selectpicker('val'));
 });
 
-
 $('.dexnav_exchange').click(function(e){
 	e.preventDefault();
 	//console.log('exchange menu clicked');
@@ -234,13 +233,13 @@ $( ".buy_coin" ).change(function() {
 	sessionStorage.setItem('dex_base_coin', base_coin);
 	sessionStorage.setItem('dex_rel_coin', rel_coin);
 
-  	
+
 
 	get_price(base_coin, rel_coin);
 
 	get_myprices();
-  
-  	
+
+
 });
 
 
@@ -437,7 +436,7 @@ $( ".sell_coin" ).change(function() {
 	coin = $('.buy_coin').selectpicker('val');
 	$('.refresh_inv_table').data('coin',coin);
 
-	
+
 	$('.deposit_coin01').data('coin', coin);
 	//calc_swap_price('kmdbtc');
 
@@ -450,7 +449,7 @@ $( ".sell_coin" ).change(function() {
 
 	sessionStorage.setItem('dex_base_coin', base_coin);
 	sessionStorage.setItem('dex_rel_coin', rel_coin);
-	
+
 	get_price(base_coin, rel_coin);
 
 	var userpass = sessionStorage.getItem('mm_userpass');
@@ -519,9 +518,9 @@ $('.buy_coin_btn').click(function(){
 	var price = $('#buy_price').val();
 
 	//var base_coin = sessionStorage.getItem('dex_base_coin');
-	var base_coin = $('.buy_coin').selectpicker('val'); //the currency you want to buy 
+	var base_coin = $('.buy_coin').selectpicker('val'); //the currency you want to buy
 	//var rel_coin = sessionStorage.getItem('dex_rel_coin');
-	var rel_coin = $('.sell_coin').selectpicker('val'); //the currency you are paying with 
+	var rel_coin = $('.sell_coin').selectpicker('val'); //the currency you are paying with
 
 	console.log('amount ' + amount);
 	console.log('price ' + price);
@@ -710,7 +709,7 @@ function CheckOrderBookFn(sig) {
 	var base_coin = $('.buy_coin').selectpicker('val');
 	//var rel_coin = sessionStorage.getItem('dex_rel_coin');
 	var rel_coin = $('.sell_coin').selectpicker('val');
-	
+
 	$('.orderbook_rel_coin').html(rel_coin);
 	$('.orderbook_base_coin').html(base_coin);
 
@@ -817,8 +816,8 @@ function enable_disable_coin(data) {
 	//console.log(data.status);
 	var electrum_option = $('.toggle_checkbox[data-coin="' + data.coin + '"]').prop('checked'); //If 'false', electrum option selected
 	var userpass = sessionStorage.getItem('mm_userpass');
-	
-	
+
+
 	if (data.coin !== ' ' ) {
 		console.log('coin value is not empty');
 	} else {
@@ -977,7 +976,7 @@ function get_myprices() {
 $('.dex_balances_tbl tbody').on('click', '.dex_balances_tbl_showinv_btn', function() {
 	var coin = $(this).data('coin');
 	$('[data-inventorycoin]').text(coin);
-	
+
 	console.log('inventory button clicked for: ' + coin);
 
 	var userpass = sessionStorage.getItem('mm_userpass');
@@ -1132,7 +1131,7 @@ $('.dex_balances_tbl tbody').on('click', '.dex_balances_tbl_showinv_btn', functi
 	    // If fail
 	    console.log(textStatus + ': ' + errorThrown);
 	});
-	
+
 	$('.coins_balance_panel').fadeOut();
 	$('.inventory_panel').fadeIn();
 });
@@ -1522,7 +1521,7 @@ function CheckPortfolioFn(sig) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
-	
+
 	var ajax_data = {"userpass":userpass,"method":"portfolio"};
 	//console.log(ajax_data)
 	var url = "http://127.0.0.1:7783";

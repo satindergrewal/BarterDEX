@@ -67,12 +67,12 @@
         <h3 class="form-signin-heading" style="text-align: center;">Welcome to BarterDEX</h3>
         <h4 style="text-align: center;">Please Login</h4>
 
-        <label for="loginPassphrase" class="sr-only">Passphrase</label>        
+        <label for="loginPassphrase" class="sr-only">Passphrase</label>
         <div class="input-group col-sm-12" style="margin-bottom: 10px;">
           <input type="password" id="loginPassphrase" class="form-control loginPassphrase" placeholder="Passphrase" data-toggle="password" required>
           <!--
           <span class="input-group-btn">
-            <button class="btn btn-grey btn_login_show_passphrase" style="height: 44px; margin-bottom: 10px;"><span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span></button> 
+            <button class="btn btn-grey btn_login_show_passphrase" style="height: 44px; margin-bottom: 10px;"><span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span></button>
           </span> -->
         </div>
         <div class="input-group col-sm-12" style="margin-bottom: 10px;">
@@ -128,6 +128,7 @@
           <ul class="nav navbar-nav navbar-right">
             <!--<li><a href="#">Link</a></li>-->
             <li class="active"><a href="javascript:void(0)" class="dexdashboard-btn">Dashboard</a></li>
+            <li><a href="javascript:void(0)" class="dexcharts-btn">Charts</a></li>
             <li><a href="javascript:void(0)" class="dextradeshistory-btn">Trade history</a></li>
             <li><a href="javascript:void(0)" class="dexdebug-close-btn" style="display: none">Close</a></li>
             <li><a href="javascript:void(0)" class="dexdebug-btn">Debug</a></li>
@@ -137,6 +138,14 @@
       </div><!-- /.container-fluid -->
     </nav>
     <!-- Section: Navigation Menu END -->
+
+    <div class="charts" style="display:none">
+      <div class="charts-config" style="margin-bottom: 20px">
+        Pick coin pair <span style="margin-left: 20px" class="charts-base"><select id="chartsBase" class="selectpicker"><option value="BTC">BTC</option><option value="KMD">KMD</option><option value="MNZ">MNZ</option><option value="BTCZ">BTCZ</option><option value="MAGA">MAGA</option><option value="BLK">BLK</option><option value="ZEN">ZEN</option><option value="BSD">BSD</option><option value="IOP">IOP</option><option value="BLOCK">BLOCK</option><option value="CHIPS">CHIPS</option><option value="888">888</option><option value="ARG">ARG</option><option value="GLT">GLT</option><option value="ZER">ZER</option><option value="HODLC">HODLC</option><option value="UIS">UIS</option><option value="CRW">CRW</option><option value="HUC">HUC</option><option value="PIVX">PIVX</option><option value="BDL">BDL</option><option value="ARC">ARC</option><option value="ZCL">ZCL</option><option value="VIA">VIA</option><option value="ERC">ERC</option><option value="FAIR">FAIR</option><option value="FLO">FLO</option><option value="SXC">SXC</option><option value="CREA">CREA</option><option value="TRC">TRC</option><option value="BTA">BTA</option><option value="SMC">SMC</option><option value="NMC">NMC</option><option value="NAV">NAV</option><option value="MOON">MOON</option><option value="EMC2">EMC2</option><option value="SYS">SYS</option><option value="I0C">I0C</option><option value="DASH">DASH</option><option value="STRAT">STRAT</option><option value="MUE">MUE</option><option value="MONA">MONA</option><option value="XMY">XMY</option><option value="MAC">MAC</option><option value="BTX">BTX</option><option value="XRE">XRE</option><option value="LBC">LBC</option><option value="SIB">SIB</option><option value="VTC">VTC</option><option value="REVS">REVS</option><option value="JUMBLR">JUMBLR</option><option value="DOGE">DOGE</option><option value="HUSH">HUSH</option><option value="ZEC">ZEC</option><option value="DGB">DGB</option><option value="MZC">MZC</option><option value="UNO">UNO</option><option value="ZET">ZET</option><option value="BTM">BTM</option><option value="CARB">CARB</option><option value="ANC">ANC</option><option value="FRK">FRK</option><option value="GAME">GAME</option><option value="LTC">LTC</option><option value="SUPERNET">SUPERNET</option><option value="WLC">WLC</option><option value="PANGEA">PANGEA</option><option value="DEX">DEX</option><option value="BET">BET</option><option value="CRYPTO">CRYPTO</option><option value="HODL">HODL</option><option value="SHARK">SHARK</option><option value="BOTS">BOTS</option><option value="MGW">MGW</option><option value="COQUI">COQUI</option><option value="KV">KV</option><option value="CEAL">CEAL</option><option value="MESH">MESH</option></select></span><span style="margin-left: 20px" class="charts-rel"><select id="chartsRel" class="selectpicker"><option value="BTC">BTC</option><option value="KMD">KMD</option><option value="MNZ">MNZ</option><option value="BTCZ">BTCZ</option><option value="MAGA">MAGA</option><option value="BLK">BLK</option><option value="ZEN">ZEN</option><option value="BSD">BSD</option><option value="IOP">IOP</option><option value="BLOCK">BLOCK</option><option value="CHIPS">CHIPS</option><option value="888">888</option><option value="ARG">ARG</option><option value="GLT">GLT</option><option value="ZER">ZER</option><option value="HODLC">HODLC</option><option value="UIS">UIS</option><option value="CRW">CRW</option><option value="HUC">HUC</option><option value="PIVX">PIVX</option><option value="BDL">BDL</option><option value="ARC">ARC</option><option value="ZCL">ZCL</option><option value="VIA">VIA</option><option value="ERC">ERC</option><option value="FAIR">FAIR</option><option value="FLO">FLO</option><option value="SXC">SXC</option><option value="CREA">CREA</option><option value="TRC">TRC</option><option value="BTA">BTA</option><option value="SMC">SMC</option><option value="NMC">NMC</option><option value="NAV">NAV</option><option value="MOON">MOON</option><option value="EMC2">EMC2</option><option value="SYS">SYS</option><option value="I0C">I0C</option><option value="DASH">DASH</option><option value="STRAT">STRAT</option><option value="MUE">MUE</option><option value="MONA">MONA</option><option value="XMY">XMY</option><option value="MAC">MAC</option><option value="BTX">BTX</option><option value="XRE">XRE</option><option value="LBC">LBC</option><option value="SIB">SIB</option><option value="VTC">VTC</option><option value="REVS">REVS</option><option value="JUMBLR">JUMBLR</option><option value="DOGE">DOGE</option><option value="HUSH">HUSH</option><option value="ZEC">ZEC</option><option value="DGB">DGB</option><option value="MZC">MZC</option><option value="UNO">UNO</option><option value="ZET">ZET</option><option value="BTM">BTM</option><option value="CARB">CARB</option><option value="ANC">ANC</option><option value="FRK">FRK</option><option value="GAME">GAME</option><option value="LTC">LTC</option><option value="SUPERNET">SUPERNET</option><option value="WLC">WLC</option><option value="PANGEA">PANGEA</option><option value="DEX">DEX</option><option value="BET">BET</option><option value="CRYPTO">CRYPTO</option><option value="HODL">HODL</option><option value="SHARK">SHARK</option><option value="BOTS">BOTS</option><option value="MGW">MGW</option><option value="COQUI">COQUI</option><option value="KV">KV</option><option value="CEAL">CEAL</option><option value="MESH">MESH</option></select></span>
+        <button class="btn btn-primary" style="margin-left: 20px" onClick="reinitTradingView()">Update</button>
+      </div>
+      <div id="tv_chart_container"></div>
+    </div>
     <div class="dextradeshistory" style="display: none">
       <span class="refresh-trades-history-icon" onclick="constructTradesHistory()">
         <i class="fa fa-refresh"></i> Refresh
@@ -445,7 +454,7 @@
               </div>
               <div class=""> <!-- panel-body -->
                 <div class="tab-content">
-                  
+
                   <div class="tab-pane fade in active" id="exchange_trading_pair" style="padding: 15px;">
                     <div class="row">
                       <div class="col-sm-12">
@@ -559,7 +568,7 @@
 
                 </div>
 
-                
+
 
               </div>
             </div>
@@ -697,5 +706,8 @@
     <!--<script src="js/dexactions.js" type="text/javascript"></script>-->
     <script src="js/simpledexactions.js" type="text/javascript"></script>
     <script src="js/electrum_list.js" type="text/javascript"></script>
+    <!-- trading view -->
+    <script type="text/javascript" src="charting_library/charting_library.min.js"></script>
+    <script type="text/javascript" src="charting_library/datafeed/udf/datafeed.js"></script>
   </body>
 </html>

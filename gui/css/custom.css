@@ -307,7 +307,8 @@ table tbody tr:first-child td {
 }
 .dexdebug,
 .dextradeshistory,
-.stats {
+.stats,
+.charts {
   position: fixed;
   top: 60px;
   left: 0;
@@ -383,6 +384,6 @@ table tbody tr:first-child td {
 }
 
 
-.toggle-on, .toggle-off { 
+.toggle-on, .toggle-off {
   line-height: 41px;
 }
