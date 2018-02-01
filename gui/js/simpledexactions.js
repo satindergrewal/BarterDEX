@@ -9,6 +9,7 @@ var check_bot_list_Interval = null;
 var bot_screen_coin_balance_Interval = null;
 var bot_screen_sellcoin_balance_Interval = null;
 var shell = require('electron').shell;
+var mmPort = window.require('electron').remote.getCurrentWindow().mmPort;
 
 $(window).resize(function() {
 	$('.loginbody').css('height',$(window).height());
@@ -349,7 +350,7 @@ $('.addcoins_tbl tbody').on('click', '.addcoins_tbl_enable_btn', function() {
 
 $('#debug-exec').click(function(e) {
 	var ajax_data = $('#debug-payload').val();
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.warn(ajax_data.indexOf('\\"'));
 
@@ -989,7 +990,7 @@ function check_coin_balance(chk_coin_data) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 
 	$.ajax({
@@ -1067,7 +1068,7 @@ function get_coin_info(coin) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin":coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -1111,7 +1112,7 @@ function get_coins() {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoins"};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -1176,7 +1177,7 @@ function enable_disable_coin(enable_disable_coin_data) {
 
 	var electrum_option = enable_disable_coin_data.electrum //If 'false', electrum option selected
 	var userpass = sessionStorage.getItem('mm_userpass');
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	if (enable_disable_coin_data.method === 'disable') {
 		console.warn('disable coin called');
@@ -1363,7 +1364,7 @@ function check_coin_inventory(coin) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"inventory","coin":coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -1436,7 +1437,7 @@ function check_coin_listunspent(coin_listunspent_data) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"listunspent","coin":coin_listunspent_data.coin,"address":coin_listunspent_data.addr};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -1502,7 +1503,7 @@ function check_coin_listunspent(coin_listunspent_data) {
 					show_list_unspents_tbl_tr += `<td>` + val.tx_pos + `</td>`;
 					show_list_unspents_tbl_tr += `<td>` + (parseFloat(val.value) / 100000000).toFixed(8) + ' ' + coin_listunspent_data.coin + `</td>`;
 				}
-				
+
 			show_list_unspents_tbl_tr += '</tr>';
 
 			$('.dex_showlist_unspents_tbl tbody').append(show_list_unspents_tbl_tr);
@@ -1718,7 +1719,7 @@ function make_inventory_withdraw(mk_inv_data) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": mk_inv_data.coin, "outputs": mk_inv_data.outputs};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.log(ajax_data);
 	console.log(JSON.stringify(ajax_data));
@@ -1775,15 +1776,15 @@ function make_inventory_withdraw(mk_inv_data) {
 function mk_inv_sendrawtx(mk_inv_rawtx_data,mk_inv_rawtx_coin) {
 	console.log(mk_inv_rawtx_data);
 	console.log(mk_inv_rawtx_coin);
-	
-	
-	
+
+
+
 	if (mk_inv_rawtx_data.hasOwnProperty('withdraw')) { console.log(mk_inv_rawtx_data.withdraw.hex); }
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"sendrawtransaction","coin": mk_inv_rawtx_coin, "signedtx": (mk_inv_rawtx_data.hasOwnProperty('withdraw') ? mk_inv_rawtx_data.withdraw.hex : mk_inv_rawtx_data.hex) };
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.log(ajax_data);
 	console.log(JSON.stringify(ajax_data));
@@ -1849,7 +1850,7 @@ function addcoin_enable_disable_coin(data) {
 	} else if (data.coin == ' ') {
 		var ajax_data = {"userpass":userpass,"method":"getcoins"};
 	}
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.log(ajax_data);
 
@@ -1902,7 +1903,7 @@ function get_coins_list() {
 
 	var ajax_data = {"userpass":userpass,"method":"getcoins"};
 	console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -2106,7 +2107,7 @@ function CheckPortfolioFn(sig) {
 
 	var ajax_data = {"userpass":userpass,"method":"portfolio"};
 	console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -2330,7 +2331,7 @@ $('.portfolio_set_price_btn').click(function() {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"setprice","base":base_coin,"rel":rel_coin,"price":price};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -2361,7 +2362,7 @@ $('.portfolio_set_autoprice_btn').click(function() {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"autoprice","base":base_coin,"rel":rel_coin,"margin":margin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -2394,7 +2395,7 @@ function set_coin_goal(goal_data){
 	} else {
 		var ajax_data = {"userpass":userpass,"method":"goal"};
 	}
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -2447,7 +2448,7 @@ $('#trading_pair_coin_autoprice_mode').change(function() {
 	var buying_or_selling = $('input[name=trading_pair_options]:checked').val();
 	var bot_or_manual = $('input[name=trading_mode_options]:checked').val();
 	var margin_or_fixed = $('#trading_pair_coin_autoprice_mode').prop('checked');
-	
+
 	if(bot_or_manual == 'tradeportfolio') {
 		if(margin_or_fixed == true) {
 			$('#trading_pair_coin_price_max_min').show();
@@ -2567,7 +2568,7 @@ function autoprice_buy_sell(autoprice_data) {
 
 	console.log(JSON.stringify(ajax_data));
 
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -2589,7 +2590,7 @@ function autoprice_buy_sell(autoprice_data) {
 		} else if (data.result == 'success') {
 			var default_lang = JSON.parse(sessionStorage.getItem('mm_default_lang'));
 			toastr.success('Order Executed', default_lang.Exchange.exchange_tradingbot_toastr_trade_info_title);
-			
+
 			var autoprice_mode = '';
 			var percent_on_off = '';
 			var autoprice_modeinfo = '';
@@ -2851,7 +2852,7 @@ function manual_buy_sell(mt_data) {
 
 	console.log(JSON.stringify(ajax_data));
 
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -2932,7 +2933,7 @@ function DepositOnError(deposit_data) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": deposit_data.coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 
 	$.ajax({
@@ -3063,7 +3064,7 @@ function setOrderPrice(trade_data) {
 	console.log(trade_data);
 	//trade_data = JSON.parse(trade_data);
 	//console.log(trade_data);
-	
+
 	if (trade_data.type == 'asks') {
 		var default_lang = JSON.parse(sessionStorage.getItem('mm_default_lang'));
 		trade_price_plus = trade_data.price * 1.001;
@@ -3127,7 +3128,7 @@ function CheckOrderBookFn(sig) {
 
 	var ajax_data = {"userpass":userpass,"method":"orderbook","base":base_coin,"rel":rel_coin};
 	//console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -3279,7 +3280,7 @@ function check_my_prices(sig){
 	//var ajax_data = {"userpass":userpass,"method":"myprice","base":base_coin,"rel":rel_coin};
 	var ajax_data = {"userpass":userpass,"method":"myprices"};
 	console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -3358,7 +3359,7 @@ function cancel_my_prices(cancel_data){
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"setprice","base":cancel_data.base,"rel":cancel_data.rel,"price":0,"broadcast":1};
 	console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -3557,7 +3558,7 @@ function coinBalanceReceiveAddr(coin) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 
 	$.ajax({
@@ -3617,7 +3618,7 @@ function coinBalanceSendFn(coin) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data0 = {"userpass":userpass,"method":"getcoin","coin": tx_coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -3892,13 +3893,13 @@ $('.your_coins_balance_info').on('click', '.coin_balance_zcredits', function() {
 
 
 function create_sendtx(coin,tx_data){
-	
+
 	console.log(tx_data);
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	//var ajax_data = {"userpass":userpass,"method":"withdraw","coin": coin, "outputs": [tx_data]};
 	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": coin, "outputs": tx_data};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.log(ajax_data);
 	console.log(JSON.stringify(ajax_data));
@@ -3959,7 +3960,7 @@ function update_min_max_price_input(){
 
 	var ajax_data = {"userpass":userpass,"method":"orderbook","base":base_coin,"rel":rel_coin};
 	//console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -4012,7 +4013,7 @@ function check_bot_list(sig) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"bot_statuslist"};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -4143,7 +4144,7 @@ function buy_sell_precheck(bot_data){
 
 		var userpass = sessionStorage.getItem('mm_userpass');
 		var ajax_data0 = {"userpass":userpass,"method":"getcoin","coin": 'BTC'};
-		var url = "http://127.0.0.1:7783";
+		var url = `http://127.0.0.1:${mmPort}`;
 
 		$.ajax({
 			async: true,
@@ -4244,7 +4245,7 @@ function bot_buy_sell(bot_data) {
 
 	console.log(JSON.stringify(ajax_data));
 
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -4315,7 +4316,7 @@ function bot_sendrawtx(bot_sendrawtx_data) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": (bot_sendrawtx_data.hasOwnProperty('withdraw') ? bot_sendrawtx_data.withdraw.hex : bot_sendrawtx_data.hex) };
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	console.log(ajax_data);
 	console.log(JSON.stringify(ajax_data));
@@ -4376,7 +4377,7 @@ function bot_stop_pause_resume(bot_data) {
 		var action_result = 'stopped';
 	}
 
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -4411,7 +4412,7 @@ function bot_settings(bot_data) {
 
 	console.log(ajax_data);
 
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -4445,7 +4446,7 @@ function bot_status(bot_data) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"bot_status","botid":bot_data.botid};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -4777,7 +4778,7 @@ function bot_screen_sellcoin_balance(sig) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 
 	$.ajax({
@@ -4882,7 +4883,7 @@ function bot_screen_coin_balance(sig) {
 
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 
 	$.ajax({
@@ -4970,7 +4971,7 @@ function electrum_coin_balance(coin_balance_data) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"balance","coin":coin_balance_data.coin,"address":coin_balance_data.smartaddress};
-	var url = "http://127.0.0.1:7783/";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -5047,7 +5048,7 @@ function check_swap_status_details(swap_status_data) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"swapstatus","requestid":requestid,"quoteid":quoteid};
-	var url = "http://127.0.0.1:7783/";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -5412,7 +5413,7 @@ function check_swap_status(sig) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"swapstatus","pending":0};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -5626,7 +5627,7 @@ function constructTradesHistory() {
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"swapstatus"};
 	//var ajax_data = {"userpass":userpass,"method":"recentswaps","limit":100};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -5906,7 +5907,7 @@ $('.btn_zeroconf_deposit').click(function(e){
 		});
 		zeroconf_deposit_confirm_bootbox.init(function(){
 			console.log('zeroconf_deposit_confirm_bootbox dialog opened.')
-			
+
 		});
 });
 
@@ -5966,7 +5967,7 @@ function getZeroConfDepositHistory(){
 											</td>`;*/
 			zeroconf_deposits_history_tr += '</tr>';
 			$('.zeroconf_deposits_history_tbl tbody').append(zeroconf_deposits_history_tr);
-			
+
 		}
 	});
 
@@ -5983,7 +5984,7 @@ function ZeroConfDeposit(deposit_weeks, deposit_amount) {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"instantdex_deposit","weeks":deposit_weeks,"amount":deposit_amount,"broadcast": 1};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -6037,7 +6038,7 @@ function ZeroConfClaim() {
 	var userpass = sessionStorage.getItem('mm_userpass');
 	var mypubkey = sessionStorage.getItem('mm_mypubkey');
 	var ajax_data = {"userpass":userpass,"method":"instantdex_claim"};
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,

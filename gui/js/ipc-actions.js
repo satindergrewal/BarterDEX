@@ -1,5 +1,6 @@
 var CheckMM_Interval = null;
 var CheckDefaultLogin_Interval = null;
+var mmPort = window.require('electron').remote.getCurrentWindow().mmPort;
 
 $(document).ready(function() {
 	BarterDEXInitLang();
@@ -90,7 +91,7 @@ $('.dextradeshistory-btn').click(function(e) {
 	$('.screen-exchange').hide();
 	$('.screen-inventory').hide();
 	$('.dexdebug').hide();
-	
+
 	$('.dextradeshistory').show();
 	$('.navbar-right').children().removeClass('active');
 	$('.dextradeshistory-btn').parent().addClass( "active" );
@@ -106,7 +107,7 @@ $('.dextradeshistory-btn').click(function(e) {
 
 	check_coin_balance(false);
 	Refresh_active_StockChart(false);
-	
+
 	/*if ($('.dextradeshistory').is(":visible")) {
 		$('body').css('overflow', 'inherit');
 		$('.dextradeshistory').hide();
@@ -389,7 +390,7 @@ $('.dexsettings-btn').click(function(e){
 					var selected_deflang = $('.settings_deflang_select').selectpicker('val');
 					barterDEX_settings.theme = selected_theme;
 					barterDEX_settings.deflang = selected_deflang;
-					
+
 					console.log(experimental_features);
 					if (experimental_features == 'enable') {
 						barterDEX_settings.experimentalFeatures = true;
@@ -463,7 +464,7 @@ function loginBarterdEX(){
 function logindICO(coin){
 	console.log('LOGIN TO dICO OPTION SEELCTED.')
 	console.log('COIN SELECTED: ' + coin)
-	
+
 	var default_lang = JSON.parse(sessionStorage.getItem('mm_default_lang'));
 	$('.mainbody').hide();
 	$('.loginbody').hide();
@@ -540,7 +541,7 @@ CheckMMStatus = function(sig) {
 		$('.loginbody').hide();
 		$('.loadingbody').fadeIn();
 	}
-	
+
 	/*if (mmstatus !== 'closed') {
 		var userpass = sessionStorage.getItem('mm_userpass');
 		var mypubkey = sessionStorage.getItem('mm_mypubkey');
@@ -556,7 +557,7 @@ CheckMMStatus = function(sig) {
 			$('.loginbody').fadeOut();
 			$('.loadingbody').hide();
 			console.log(mypubkey);
-			
+
 		}
 		CheckPortfolio_Interval = setInterval(CheckPortfolioFn,60000);
 		CheckPortfolioFn();
@@ -579,7 +580,7 @@ CheckDefaultLogin = function(sig) {
 	var userpass = '1d8b27b21efabcd96571cd56f91a40fb9aa4cc623d273c63bf9223dc6f8cd81f';
 	var ajax_data = {"userpass":userpass,"method":"enable","coin":""};
 	//console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,
@@ -625,7 +626,7 @@ LoginWithPassphrase = function(login_passphrase_data,action_mode) {
 	} else {
 		var userpass = '1d8b27b21efabcd96571cd56f91a40fb9aa4cc623d273c63bf9223dc6f8cd81f';
 	}
-	
+
 	var ajax_data = {"userpass":userpass,"method":"passphrase","passphrase":login_passphrase_data.passphrase,"gui":"simplegui"};
 
 	if (login_passphrase_data.netid == 0) {
@@ -639,7 +640,7 @@ LoginWithPassphrase = function(login_passphrase_data,action_mode) {
 		ajax_data.seednode = login_passphrase_data.seednode;
 	}
 	//console.log(ajax_data)
-	var url = "http://127.0.0.1:7783";
+	var url = `http://127.0.0.1:${mmPort}`;
 
 	$.ajax({
 		async: true,

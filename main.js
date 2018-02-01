@@ -76,6 +76,13 @@ function createWindow (status) {
     { role: 'selectall' },
   ]);
 
+  for (let i = 0; i < process.argv.length; i++) {
+    if (process.argv[i].indexOf('mmport') > -1) {
+      console.log(`custom mm port ${process.argv[i].replace('mmport=', '')}`);
+      mainWindow.mmPort = process.argv[i].replace('mmport=', '');
+    }
+  }
+
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'gui/index.html'),

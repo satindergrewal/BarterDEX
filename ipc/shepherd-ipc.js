@@ -22,6 +22,14 @@ var ps = require('ps-node'),
       assetChainPorts = require('./ports.js');
 
 const killmm = require('./killmm');
+let mmPort = 7783;
+
+for (let i = 0; i < process.argv.length; i++) {
+  if (process.argv[i].indexOf('mmport') > -1) {
+    console.log(`custom mm port ${process.argv[i].replace('mmport=', '')}`);
+    mmPort = process.argv[i].replace('mmport=', '');
+  }
+}
 
 // SETTING OS DIR TO RUN MARKETMAKER FROM
 // SETTING APP ICON FOR LINUX AND WINDOWS
@@ -134,7 +142,7 @@ ipcMain.on('shepherd-command', (event, arg) => {
                   event.returnValue = 'Logged Out';
                   break;
             case 'mmstatus':
-                  portscanner.checkPortStatus(7783, '127.0.0.1', function(error, status) {
+                  portscanner.checkPortStatus(mmPort, '127.0.0.1', function(error, status) {
                         console.log(status)
                         //event.sender.send('shepherd-reply', status);
                         event.returnValue = status;
@@ -232,7 +240,7 @@ StartMarketMaker = function(data) {
     try {
       fs.unlink(BarterDEXDir+'/coins.json');
       // check if marketmaker instance is already running
-      portscanner.checkPortStatus(7783, '127.0.0.1', function(error, status) {
+      portscanner.checkPortStatus(mmPort, '127.0.0.1', function(error, status) {
         // Status is 'open' if currently in use or 'closed' if available
         if (status === 'closed') {
             const _coinsListFile = BarterDEXDir+'/coins.json'
@@ -278,7 +286,7 @@ StartMarketMaker = function(data) {
                   }
             })
         } else {
-          console.log(`port 7783 marketmaker is already in use`);
+          console.log(`port ${mmPort} marketmaker is already in use`);
         }
       });
     } catch(e) {
@@ -309,7 +317,7 @@ ExecMarketMaker = function(data) {
         };
       }*/
 
-      const _customParam = {
+      let _customParam = {
               'gui':'simplegui',
               'client':1,
               'profitmargin': 0.01,
@@ -317,6 +325,10 @@ ExecMarketMaker = function(data) {
               'passphrase': data.passphrase,
               'coins': data.coinslist
         };
+
+      if (mmPort !== 7783) {
+        _customParam['rpcport'] = mmPort;
+      }
 
       //console.log(JSON.stringify(_customParam))
       //console.log(`exec ${BarterDEXBin} ${JSON.stringify(_customParam)}`);
