@@ -1,6 +1,8 @@
 var CheckMM_Interval = null;
 var CheckDefaultLogin_Interval = null;
-var mmPort = window.require('electron').remote.getCurrentWindow().mmPort;
+var mmPort = window.require('electron').remote.getCurrentWindow().mmPort || 7783;
+
+console.log(window.require('electron').remote.getCurrentWindow().config);
 
 $(document).ready(function() {
 	BarterDEXInitLang();

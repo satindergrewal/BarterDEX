@@ -83,6 +83,8 @@ function createWindow (status) {
     }
   }
 
+  mainWindow.config = fs.readJsonSync(path.join(__dirname, 'config.json'));
+
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'gui/index.html'),

@@ -9,7 +9,8 @@ var check_bot_list_Interval = null;
 var bot_screen_coin_balance_Interval = null;
 var bot_screen_sellcoin_balance_Interval = null;
 var shell = require('electron').shell;
-var mmPort = window.require('electron').remote.getCurrentWindow().mmPort;
+var mmPort = window.require('electron').remote.getCurrentWindow().mmPort || 7783;
+var conf = window.require('electron').remote.getCurrentWindow().config;
 
 $(window).resize(function() {
 	$('.loginbody').css('height',$(window).height());
@@ -22,6 +23,13 @@ $(window).resize(function() {
 })
 
 $(document).ready(function() {
+	// load conf
+	$('#loginPassphrase').val(conf.passphrase);
+	$('.load-selection-btn').click(function() {
+		sessionStorage.setItem('mm_chartinterval', JSON.stringify({"periodicity":"h","interval":1}));
+		loadCoinSelection();
+	});
+
 	document.addEventListener('drop', function(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -1150,6 +1158,34 @@ function get_coins() {
 	    // If fail
 	    console.log(textStatus + ': ' + errorThrown);
 	});
+}
+
+function loadCoinSelection() {
+	for (let i = 0; i < conf.coins.length; i++) {
+		const _coin = conf.coins[i].indexOf('|spv') > -1 ? conf.coins[i].split('|')[0] : conf.coins[i];
+		const _electrum = conf.coins[i].indexOf('|spv') > -1 ? false : true;
+
+		enable_disable_coin({
+			coin: _coin,
+			electrum: _electrum,
+			method: 'enable',
+		});
+	}
+
+	$('.porfolio_coins_list tbody').empty();
+	var actiavte_portfolio_coins_list_spinner = ''
+	actiavte_portfolio_coins_list_spinner += '<th colspan="7">';
+		actiavte_portfolio_coins_list_spinner += '<div style="text-align: center; height: 100px;">';
+			actiavte_portfolio_coins_list_spinner += '<svg id="portfolio-coins-spinner">';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path2" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path3" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+				actiavte_portfolio_coins_list_spinner += '<circle class="path4" cx="50" cy="50" r="20" fill="none" stroke-width="5" stroke-miterlimit="10"/>';
+			actiavte_portfolio_coins_list_spinner += '</svg>';
+		actiavte_portfolio_coins_list_spinner += '</div>';
+	actiavte_portfolio_coins_list_spinner += '</th>';
+	$('.porfolio_coins_list tbody').append(actiavte_portfolio_coins_list_spinner);
+	CheckPortfolioFn();
 }
 
 let electrumCoinsKeepAlive = {};
