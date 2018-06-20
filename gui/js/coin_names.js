@@ -68,6 +68,11 @@ function return_coin_details(coin) {
 			coin_details.explorer = 'https://explorer.buck.red/tx/';
 			coin_details.eth = false;
 			break;
+                case 'CRDS':
+                        coin_details.name = 'Credits';
+                        coin_details.explorer = 'http://explorer.crds.co/tx/';
+                        coin_details.eth = false;
+                        break;
 		case 'ORE':
 			coin_details.name = 'Galactrum';
 			coin_details.explorer = 'https://explorer.galactrum.org/tx/';
@@ -268,6 +273,11 @@ function return_coin_details(coin) {
 			coin_details.explorer = 'https://explorer.litecoinz.info/tx/';
 			coin_details.eth = false;
 			break;
+                case 'MLM':
+                        coin_details.name = 'MktCoin';
+                        coin_details.explorer = 'https://info.mktcoin.org/tx/';
+                        coin_details.eth = false;
+                        break;
 		case 'MNX':
 			coin_details.name = 'MinexCoin';
 			coin_details.explorer = 'https://minexexplorer.com/?r=explorer/tx&hash=';
