@@ -1,3 +1,8 @@
+# This repository is deprecated and no longer supported! Please wait for the MM2 release.
+
+
+
+
 # Official BarterDEX README
 
 The BarterDEX application created by Komodo Platform allows trading cryptocurrency coins without a counterparty risk.
@@ -14,7 +19,7 @@ The BarterDEX application created by Komodo Platform allows trading cryptocurren
 
 BarterDEX App includes all things required to run. You don't need to do anything else. Just use the following instructions to start using it.
 
-It has the pre-compiled `marketmaker` bundled with it. But in any case you still wish to compile `marketmaker` yourself, you ca follow these instructions:
+It has the pre-compiled `marketmaker` bundled with it. But in any case you still wish to compile `marketmaker` yourself, you can follow these instructions:
 
 https://github.com/KomodoPlatform/KomodoPlatform/wiki/Compile-marketmaker-Binary-with-Static-nanomsg-in-Linux
 https://github.com/KomodoPlatform/KomodoPlatform/wiki/Compile-marketmaker-Binary-with-Static-nanomsg-in-MacOS
@@ -26,12 +31,12 @@ https://github.com/KomodoPlatform/KomodoPlatform/wiki/Compile-marketmaker-Binary
 - Node.js - v7.10.0 or above
 
 
-To get started follow these steps:
+To get started, follow these steps:
 ```shell
 git clone https://github.com/KomodoPlatform/BarterDEX.git
 cd BarterDEX
-git pull
 git checkout dev
+git pull
 npm install
 npm start
 ```
@@ -49,7 +54,7 @@ git pull
 
 #### For end users
 
-To build the production ready app, install `electron-packager` and `electron-prebuilt` packages from npm
+To build the production-ready app, install `electron-packager` and `electron-prebuilt` packages from npm
 ```shell
 sudo npm install electron-packager -g
 sudo npm install -g electron --unsafe-perm=true
@@ -58,7 +63,7 @@ sudo npm install -g electron --unsafe-perm=true
 
 ### Instructions to test
 1. Start BarterDEX
-2. Login with `passphrase` (either pre-generated or make a new one).
+2. Login with a `passphrase` (either pre-generated or make a new one).
 3. Add the coins you want to test in Native mode or Electrum mode (electrum does not require downloading blockchain data)
 4. Fund your addresses. Once sent, it will start reflecting there in a minute.
 5. Click Exchange button to go to trading page
@@ -76,6 +81,23 @@ If your wallet is encrypted, the app will not work with it. This feature will be
 ### **Build the App**
 Refer to the original [electron-packager](https://github.com/electron-userland/electron-packager) repository for more detailed information.
 
+
+##### Quick Build Instructions
+Make sure you have already done `npm install` or `npm upgrade` before executing these commands:
+
+```shell
+cd BarterDEX
+
+# Linux
+npm run package:linux
+
+# Mac
+npm run package:mac
+
+# Windows
+npm run package:win
+```
+
 ##### Linux
 Change directory to BarterDEX and execute the following command to build the Linux app
 ```shell
@@ -92,9 +114,9 @@ electron-packager . --platform=darwin --arch=x64 --icon=assets/icons/barterdex/b
 ```
 
 ##### Windows
-Change directory to iguana and execute the following command to build the Windows app
+Change directory to BarterDEX and execute the following command to build the Windows app
 ```shell
-dir iguana
+dir BarterDEX
 electron-packager . --platform=win32 --arch=x64 --icon=assets/icons/barterdex/barterdex.ico --out=build/ --buildVersion=VERSION_NUMBER_HERE --ignore=assets/bin/osx --ignore=assets/bin/linux64 --overwrite
 
 # If generating 32bit desktop package
@@ -109,7 +131,7 @@ change architecture build parameter to ```--arch=x64``` for 64 bit build
 
 ## Localization Instructions
 
-BarterDEX follows langauge and country code list localization file names. Please use the following links to get more info on the standard codes for country and language codes:
+BarterDEX follows language and country code list localization file names. Please use the following links to get more info on the standard codes for country and language codes:
 
 https://datahub.io/core/language-codes
 

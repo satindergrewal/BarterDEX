@@ -14,6 +14,7 @@ const electron = require('electron'),
   fixPath = require('fix-path'),
   numCPUs = require('os').cpus().length,
   killmm = require('./killmm'),
+  request = require('request'),
   { ipcMain } = require('electron');
 
 var ps = require('ps-node'),
@@ -31,16 +32,32 @@ switch (osPlatform) {
     fixPath();
     BarterDEXBin = path.join(__dirname, '../assets/bin/osx/marketmaker');
     BarterDEXDir = `${process.env.HOME}/Library/Application Support/BarterDEX`;
+    CoinsDBDir = `${process.env.HOME}/Library/Application Support/BarterDEX/CoinsDB`;
+    CoinsDBIconsDir = `${process.env.HOME}/Library/Application Support/BarterDEX/CoinsDB/icons`;
+    CoinsDBExplorersDir = `${process.env.HOME}/Library/Application Support/BarterDEX/CoinsDB/explorers`;
+    CoinsDBElectrumsDir = `${process.env.HOME}/Library/Application Support/BarterDEX/CoinsDB/electrums`;
     break;
   case "linux":
     BarterDEXBin = path.join(__dirname, '../assets/bin/linux64/marketmaker');
     BarterDEXDir = `${process.env.HOME}/.BarterDEX`;
+    CoinsDBDir = `${process.env.HOME}/.BarterDEX/CoinsDB`;
+    CoinsDBIconsDir = `${process.env.HOME}/.BarterDEX/CoinsDB/icons`;
+    CoinsDBExplorersDir = `${process.env.HOME}/.BarterDEX/CoinsDB/explorers`;
+    CoinsDBElectrumsDir = `${process.env.HOME}/.BarterDEX/CoinsDB/electrums`;
     break;
   case "win32":
     BarterDEXBin = path.join(__dirname, '../assets/bin/win64/marketmaker.exe');
     BarterDEXBin = path.normalize(BarterDEXBin);
     BarterDEXDir = `${process.env.APPDATA}/BarterDEX`;
     BarterDEXDir = path.normalize(BarterDEXDir);
+    CoinsDBDir = `${process.env.APPDATA}/BarterDEX/CoinsDB`;
+    CoinsDBDir = path.normalize(CoinsDBDir);
+    CoinsDBIconsDir = `${process.env.APPDATA}/BarterDEX/CoinsDB/icons`;
+    CoinsDBIconsDir = path.normalize(CoinsDBIconsDir);
+    CoinsDBExplorersDir = `${process.env.APPDATA}/BarterDEX/CoinsDB/explorers`;
+    CoinsDBExplorersDir = path.normalize(CoinsDBExplorersDir);
+    CoinsDBElectrumsDir = `${process.env.APPDATA}/BarterDEX/CoinsDB/electrums`;
+    CoinsDBElectrumsDir = path.normalize(CoinsDBElectrumsDir);
     BarterDEXIcon = path.join(__dirname, '/assets/icons/barterdex/barterdex.ico');
     break;
 }
@@ -97,7 +114,7 @@ fs.pathExists(_BarterDEXSettingsFile, (err, exists) => {
 });
 
 ipcMain.on('shepherd-command', (event, arg) => {
-  console.log('Shepard arg: ' + JSON.stringify(arg.command))  // prints arg
+  //console.log('Shepard arg: ' + JSON.stringify(arg.command))  // prints arg
   switch (arg.command) {
     case 'ping':
       event.returnValue = 'pong'
@@ -161,7 +178,8 @@ ipcMain.on('shepherd-command', (event, arg) => {
       event.returnValue = 'reset_done';
       break;
     case 'app_info':
-      event.returnValue = app.getVersion();
+      var return_app_info_data = {"app_version": app.getVersion(),"BarterDEXDir": BarterDEXDir, "CoinsDBDir": CoinsDBDir, "CoinsDBIconsDir": CoinsDBIconsDir, "CoinsDBExplorersDir": CoinsDBExplorersDir, "CoinsDBElectrumsDir": CoinsDBElectrumsDir};
+      event.returnValue = return_app_info_data;
       break;
     case 'get_lang_data':
       console.log(arg.lang);
@@ -169,7 +187,7 @@ ipcMain.on('shepherd-command', (event, arg) => {
         .then(barterdex_deflang_file_output => {
           event.returnValue = barterdex_deflang_file_output;
         })
-        .catch(err => { console.error(err) })
+        .catch(err => { console.error(err); event.returnValue = ""; })
       break;
     case 'get_lang_file_list':
       fs.readdir(path.join(__dirname, `../assets/languages/`), function (err, lang_files) {
@@ -177,13 +195,81 @@ ipcMain.on('shepherd-command', (event, arg) => {
         console.log(lang_files);
         event.returnValue = lang_files;
       });
+      break;
+    case 'coins_db_dl':
+      console.log(arg);
+      CoinsDBDownloadFiles(arg.data);
+      event.returnValue = 'CoinsDB command executed';
+      break;
+    case 'coins_db_get_coins_file':
+      console.log('Getting Coins DB file...');
+      fs.readJson(path.join(`${CoinsDBDir}/coins`))
+        .then(coins_db_coins_local_file => {
+          event.returnValue = coins_db_coins_local_file;
+        })
+        .catch(err => { console.error(err); event.returnValue = ""; })
+      break;
+    case 'coinsdb_manage':
+      console.log(arg);
+      CoinsDB_Manage(arg.data);
+      event.returnValue = 'CoinsDB Manage command executed';
+      break;
+    case 'coins_db_update_coins_json_file':
+      const _coinsListFile = BarterDEXDir + '/coins.json'
+      fs.writeJsonSync(_coinsListFile, arg.data);
+      event.returnValue = 'Coins JSON file updated!';
+      /*fs.writeJsonSync(_coinsListFile, arg.data, function (err) {
+        if (err) throw err;
+        console.log('Coins JSON file updated!');
+        event.returnValue = 'Coins JSON file updated!';
+      });*/
+      break;
+    case 'coins_db_read_coins_json':
+      fs.readJson(`${BarterDEXDir}/coins.json`)
+        .then(coins_json_file => { event.returnValue = coins_json_file; })
+        .catch(err => { console.error(err); event.returnValue = []; })
+      break;
+    case 'coins_db_read_db':
+      fs.readJson(`${CoinsDBDir}/coins`)
+        .then(coins_db_file => { event.returnValue = coins_db_file; })
+        .catch(err => { console.error(err); event.returnValue = []; })
+      break;
+    case 'coins_db_read_explorers':
+      //console.log(arg.coin);
+      fs.readJson(`${CoinsDBExplorersDir}/${arg.coin}`)
+        .then(coins_db_explorers_file => { event.returnValue = coins_db_explorers_file; })
+        .catch(err => { console.error(err); event.returnValue = ""; })
+      break;
+    case 'coins_db_read_electrums':
+      //console.log(arg.coin);
+      fs.readJson(`${CoinsDBElectrumsDir}/${arg.coin}`)
+        .then(coins_db_elecrum_file => { event.returnValue = coins_db_elecrum_file; })
+        .catch(err => { console.error(err); event.returnValue = ""; })
+      break;
+    case 'read_release_notes':
+      fs.readFile(path.join(__dirname, `../release_notes`), 'utf8')
+        .then(release_notes_file_output => {
+          //console.log(release_notes_file_output)
+          event.returnValue = release_notes_file_output;
+        })
+        .catch(err => {
+          console.error(err)
+          event.returnValue = "";
+        });
+      break;
+    default:
+      event.returnValue = 'Command not found';
   }
 })
 
 
 StartMarketMaker = function (data) {
   try {
-    fs.unlink(BarterDEXDir + '/coins.json');
+    
+    //Delete coins.json file so that BarterDEX always gets the same copy of coins.json from default file.
+    //Disable this line when coinsDB feature is enabled.
+    //fs.unlink(BarterDEXDir + '/coins.json');
+    
     // check if marketmaker instance is already running
     portscanner.checkPortStatus(7783, '127.0.0.1', function (error, status) {
       // Status is 'open' if currently in use or 'closed' if available
@@ -341,10 +427,216 @@ function ProcessCoinsList(coins) {
       coins = coins.replace(/USERHOME/g, `${process.env.APPDATA}`);
       coins = coins.replace(/\/\./g, '/');
       coins = path.normalize(coins);
-      coins = coins.replace(/\\/g, "\\\\");
+      // coins = coins.replace(/\\/g, "\\\\");
+      coins = coins.replace(/\\/g,'/');  // FIXED - ERROR on windows
       break;
   }
   coins = JSON.parse(coins);
   return coins;
 
 }
+
+
+/* Coins DB IPC calls and functions */
+
+var coin_db_img_url = 'https://raw.githubusercontent.com/jl777/coins/master/icons/';
+var coins_db_coins_url = 'https://raw.githubusercontent.com/jl777/coins/master/coins';
+var coins_db_explorer_url = 'https://raw.githubusercontent.com/jl777/coins/master/explorers/';
+var coins_db_electrums_url = 'https://raw.githubusercontent.com/jl777/coins/master/electrums/';
+
+CoinsDBDownloadFiles = function (action_data) {
+  console.log(action_data);
+
+  var cdb_dl_fn = function(url, dest, cb) {
+      var file = fs.createWriteStream(dest);
+      var sendReq = request.get(url);
+
+      // verify response code
+      sendReq.on('response', function(response) {
+          if (response.statusCode == 200) {
+              return cb('Response status was ' + response.statusCode);
+          }
+          if (response.statusCode !== 200) {
+              return cb('Response status was ' + response.statusCode);
+          }
+      });
+
+      // check for request errors
+      sendReq.on('error', function (err) {
+          fs.unlink(dest);
+          console.log('SendReq Error Message:');
+          return cb(err.message);
+      });
+
+      sendReq.pipe(file);
+
+      file.on('finish', function() {
+          file.close(cb);  // close() is async, call cb after close completes.
+          console.log('Finished');
+          //console.log(dest);
+          fs.readFile(dest, 'utf8')
+          .then(file_output => {
+            //console.log(file_output)
+            if (file_output == `404: Not Found
+`) {
+              fs.remove(dest)
+              .then(() => {
+                console.log(file_output);
+                console.log(`Removed ${dest}`);
+              })
+              .catch(err => {
+                console.error(err)
+              })
+            }
+          })
+          .catch(err => {
+            console.error(err)
+          })
+      });
+
+      file.on('error', function(err) { // Handle errors
+          fs.unlink(dest); // Delete the file async. (But we don't check the result)
+          console.log('File Error Message:');
+          return cb(err.message);
+      });
+  };
+
+  switch (action_data.cmd) {
+    case 'dl_icons':
+      console.log('Shepherd IPC Command ==> CoinsDB Command --> downloading selected coins icons...');
+      console.log(action_data.coin_array)
+
+      // Ensure that CoinsDB/icons directory exists locally with promises:
+      fs.ensureDir(CoinsDBIconsDir)
+      .then(() => {
+        console.log('CoinsDB Status: Ensured CoinsDB icons directory exists: ' + CoinsDBIconsDir);
+        console.log('CoinsDB Status: Downloading coins icons: ' + CoinsDBIconsDir);
+
+        for (var i = 0, l = action_data.coin_array.length; i < l; i++ ) {
+          console.log(action_data.coin_array[i]);
+          console.log(coin_db_img_url + action_data.coin_array[i].toLowerCase() + '.png');
+          cdb_dl_fn(coin_db_img_url + action_data.coin_array[i].toLowerCase() + '.png', `${CoinsDBIconsDir}/${action_data.coin_array[i].toLowerCase()}.png`, function(cb) {
+            console.log(cb);
+          });
+        }
+
+      })
+      .catch(err => {
+        console.error(err)
+      })
+      break;
+    case 'dl_coin_explorers':
+      console.log('Shepherd IPC Command ==> CoinsDB Command --> downloading selected coins explorers info...');
+      console.log(action_data.coin_array)
+
+      // Ensure that CoinsDB/explorers directory exists locally with promises:
+      fs.ensureDir(CoinsDBExplorersDir)
+      .then(() => {
+        console.log('CoinsDB Status: Ensured CoinsDB explorers directory exists: ' + CoinsDBExplorersDir);
+        console.log('CoinsDB Status: Downloading coins explorers: ' + CoinsDBExplorersDir);
+
+        for (var i = 0, l = action_data.coin_array.length; i < l; i++ ) {
+          console.log(action_data.coin_array[i]);
+          console.log(coins_db_explorer_url + action_data.coin_array[i]);
+          cdb_dl_fn(coins_db_explorer_url + action_data.coin_array[i], `${CoinsDBExplorersDir}/${action_data.coin_array[i]}`, function(cb) {
+            console.log(cb);
+          });
+        }
+
+      })
+      .catch(err => {
+        console.error(err)
+      })
+      break;
+    case 'dl_coin_electrums':
+      console.log('Shepherd IPC Command ==> CoinsDB Command --> downloading selected coins electrums info...');
+      console.log(action_data.coin_array)
+
+      // Ensure that CoinsDB/electrums directory exists locally with promises:
+      fs.ensureDir(CoinsDBElectrumsDir)
+      .then(() => {
+        console.log('CoinsDB Status: Ensured CoinsDB electrums directory exists: ' + CoinsDBElectrumsDir);
+        console.log('CoinsDB Status: Downloading coins electrums: ' + CoinsDBElectrumsDir);
+
+        for (var i = 0, l = action_data.coin_array.length; i < l; i++ ) {
+          console.log(action_data.coin_array[i]);
+          console.log(coins_db_electrums_url + action_data.coin_array[i]);
+          cdb_dl_fn(coins_db_electrums_url + action_data.coin_array[i], `${CoinsDBElectrumsDir}/${action_data.coin_array[i]}`, function(cb) {
+            console.log(cb);
+          });
+        }
+
+      })
+      .catch(err => {
+        console.error(err)
+      })
+      break;
+    case 'update_coins_file':
+      console.log('Shepherd IPC Command ==> CoinsDB Command --> updating coins file...');
+
+      // Ensure that CoinsDB directory exists locally with promises:
+      fs.ensureDir(CoinsDBDir)
+      .then(() => {
+        console.log('CoinsDB Status: Ensured CoinsDB directory exists: ' + CoinsDBDir);
+        console.log('CoinsDB Status: Downloading Coins File: ' + CoinsDBDir);
+            // Remove existing file and download fresh copy of coins file
+            fs.remove(`${CoinsDBDir}/coins`)
+            .then(() => {
+                cdb_dl_fn(coins_db_coins_url, `${CoinsDBDir}/coins`, function(cb) {
+                    console.log(cb);
+                });
+            })
+            .catch(err => {
+                console.error(err)
+            })
+      })
+      .catch(err => {
+        console.error(err)
+      })
+      break;
+    default:
+      console.log('CoinsDB command not found');
+  }
+
+}
+
+
+
+
+CoinsDB_Manage = function (action_data) {
+  console.log(action_data);
+
+  var default_coins_detail_list = [{"coin": "KMD", "Name": "Komodo","eth":false},{"coin": "BTC", "Name": "Bitcoin","eth":false},{"asset":"ETOMIC","coin":"ETOMIC","eth":false,"fname":"ETOMIC","rpcport":10271}];
+
+  switch (action_data.cmd) {
+    case 'gen':
+      console.log(`Generating coins.json file...`);
+      console.log(action_data.coin_array)
+      for (let i=0; i<action_data.coin_array.length; i++) {
+        if (action_data.coin_array[i] !== 'BTC' && action_data.coin_array[i] !== 'KMD') {
+          console.log(action_data.coin_array[i]);
+          if (action_data.coin_array[i].coin == value) {
+            //console.log(action_data.coin_array[i]);
+            if (action_data.coin_array[i].etomic != undefined) {
+              console.log(`${action_data.coin_array[i].coin} is ETOMIC`);
+              action_data.coin_array[i].eth = true
+              console.log(action_data.coin_array[i]);
+            } else {
+              action_data.coin_array[i].eth = false
+              console.log(action_data.coin_array[i]);
+            }
+          }
+        }
+      }
+    case 'update':
+      console.log(`Updating coins.json file...`);
+      console.log(lstore_coinsdb_json_array);
+      break;
+    default:
+      console.log(`Default action. No action selected.`);
+  }
+}
+
+
+
+/* Coins DB IPC calls and functions END */
